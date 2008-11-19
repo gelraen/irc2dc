@@ -36,6 +36,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 Connection::Connection()
 {
@@ -93,6 +94,17 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 	else
 	{
 		m_bConnected=true;
+		int fl;
+		if ((fl=fcntl(m_socket,F_GETFL))==-1)
+		{
+			perror("Connection::Connect(): fcntl(2)(socket,F_GETFL) failed:");
+			exit(1);
+		}
+		if (fcntl(m_socket,F_SETFL,fl|O_NONBLOCK)==-1)
+		{
+			perror("Connection::Connect(): fcntl(2)(socket,F_SETFL) failed:");
+			exit(1);
+		}
 	}
 }
 
@@ -149,7 +161,7 @@ void Connection::_read()
 	if (!m_bConnected) return;
 	char buf[4096]={0};
 	int n=0;
-	while(n=read(m_socket,(void*)buf,4096)>0)
+	while((n=read(m_socket,(void*)buf,4096))>0)
 	{
 		m_recvbuf+=string(buf,n);
 	}
