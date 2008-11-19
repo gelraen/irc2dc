@@ -1,0 +1,4 @@
+INCLUDES = 
+METASOURCES = AUTO
+bin_PROGRAMS = irc2dc
+irc2dc_SOURCES = main.cpp
