@@ -31,13 +31,42 @@
  *
  *  $Id$
  */
+#ifndef CONNECTION_H
+#define CONNECTION_H
 
-#include <iostream>
+#include <string>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/select.h>
 
 using namespace std;
 
-int main()
+/**
+ @author gelraen <gelraen.ua@gmail.com>
+*/
+
+class Connection
 {
-	cout << "Hello, world!" << endl;
-	return 0;
-}
+
+public:
+	Connection();
+
+	virtual ~Connection();
+	bool FdSet( fd_set& fdset );
+	virtual bool ReadCmd( string& str ) = 0;
+	virtual bool WriteCmd( const string& str ) = 0;
+    void io();
+    int Connect(const struct sockaddr *name, socklen_t namelen);
+    virtual int Close();
+    void _write();
+    void _read();
+
+private:
+	int m_socket;
+	bool m_bConnected;
+protected:
+	string m_recvbuf;
+	string m_sendbuf;
+};
+
+#endif

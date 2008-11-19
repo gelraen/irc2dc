@@ -31,13 +31,139 @@
  *
  *  $Id$
  */
+#include "connection.h"
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
+#include <errno.h>
 
-#include <iostream>
-
-using namespace std;
-
-int main()
+Connection::Connection()
 {
-	cout << "Hello, world!" << endl;
+	m_bConnected=false;
+}
+
+
+Connection::~Connection()
+{
+}
+
+
+/*!
+    \fn Connection::FdSet(fd_set& fdset)
+ */
+bool Connection::FdSet( fd_set& fdset )
+{
+	if ( !m_bConnected ) return false;
+
+	FD_SET( m_socket,&fdset ); // adding our socket descriptor to fdset
+
+	return true;
+}
+
+
+/*!
+    \fn Connection::io()
+ */
+void Connection::io()
+{
+	_write();
+	_read();
+}
+
+
+/*!
+    \fn Connection::Connect(const struct sockaddr *name, socklen_t namelen)
+ */
+int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
+{
+	if (m_bConnected)
+	{
+		Close();
+	}
+	m_socket=socket(name->sa_family,SOCK_STREAM,0);
+	if (m_socket!=-1)
+	{
+		perror("Connection::Connect(): socket(2) failed:");
+		exit(1);
+	}
+	if (connect(m_socket,name,namelen)==-1)
+	{
+		perror("Connection::Connect(): connect(2) failed:");	
+	}
+	else
+	{
+		m_bConnected=true;
+	}
+}
+
+
+/*!
+    \fn Connection::Close()
+ */
+int Connection::Close()
+{
+	if (m_bConnected)
+	{
+		m_recvbuf.erase();
+		m_sendbuf.erase();
+		return close(m_socket);
+	}
 	return 0;
 }
+
+
+/*!
+    \fn Connection::_write()
+ */
+void Connection::_write()
+{
+	if (!m_bConnected) return;
+	int n=0;
+	while(m_sendbuf.length()>0)
+	{
+		n=write(m_socket,m_sendbuf.c_str(),m_sendbuf.length());
+		if (n==-1) break;
+		m_sendbuf.erase(0,n);
+	}
+	
+	if (n==-1)
+	{
+		switch(errno)
+		{
+			case ECONNRESET:
+				close(m_socket);
+				m_bConnected=false;
+				break;
+			default:
+				perror("Connection::_write(): write(2) failed:");
+				break;
+		};
+	}}
+
+
+/*!
+    \fn Connection::_read()
+ */
+void Connection::_read()
+{
+	if (!m_bConnected) return;
+	char buf[4096]={0};
+	int n=0;
+	while(n=read(m_socket,(void*)buf,4096)>0)
+	{
+		m_recvbuf+=string(buf,n);
+	}
+	
+	if (n==-1)
+	{
+		switch(errno)
+		{
+			case ECONNRESET:
+				close(m_socket);
+				m_bConnected=false;
+				break;
+			default:
+				perror("Connection::_read(): read(2) failed:");
+				break;
+		};
+	}}
