@@ -31,54 +31,51 @@
  *
  *  $Id$
  */
-#include "dcconnection.h"
+#include "ircconnection.h"
 
-DCConnection::DCConnection()
+IRCConnection::IRCConnection()
  : Connection()
 {
 }
 
 
-DCConnection::~DCConnection()
+IRCConnection::~IRCConnection()
 {
 }
 
-
 /*!
-    \fn DCConnection::WriteCmd(const string& str)
+    \fn IRCConnection::WriteCmd(const string& str)
  */
-bool DCConnection::WriteCmd(const string& s)
+bool IRCConnection::WriteCmd(const string& s)
 {
 	// not sure is it needed. We may place data in buffer even if not connected
 	if (!m_bConnected) return false;
 	
-	// 1) replace "|" with "&#124;"
-	//		this provided for guarantee that it will be single command
-	//		all other possible replacements should be done somwhere else
-	// 2) place command to m_sendbuf, followed by "|"
+	// 1) cut command to 510 bytes
+	// 2) put it in m_sendbuf follower by "\r\n"
 	string str=s;
-	string::size_type pos=0;
-	while((pos=str.find('|',pos))!=string::npos)
+	if (str.length()>510)
 	{
-		str.replace(pos,1,"&#124;");
+		str.erase(510,string::npos);
 	}
+	
 	m_sendbuf+=str;
-	m_sendbuf+=string("|");
+	m_sendbuf+="\r\n";
 	return true;
 }
 
 
 /*!
-    \fn DCConnection::ReadCmd(string& str)
+    \fn IRCConnection::ReadCmd(string& str)
  */
-bool DCConnection::ReadCmd(string& str)
+bool IRCConnection::ReadCmd(string& str)
 {
 	if (!m_bConnected || m_recvbuf.empty()) return false;
 	
-	string::size_type pos=0;
-	pos=m_recvbuf.find("|",0);
-	if (pos==string::npos) return false; // still no full command
+	string::size_type pos;
+	pos=m_recvbuf.find("\r\n");
+	if (pos==string::npos) return false;
 	str=m_recvbuf.substr(0,pos);
-	m_recvbuf.erase(0,pos+1);
+	m_recvbuf.erase(0,pos+2);
 	return true;
 }
