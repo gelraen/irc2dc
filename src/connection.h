@@ -52,7 +52,7 @@ public:
 	Connection();
 
 	virtual ~Connection();
-	bool FdSet( fd_set& fdset );
+	bool FdSet( fd_set& fdset ) const;
 	virtual bool ReadCmd( string& str ) = 0;
 	virtual bool WriteCmd( const string& str ) = 0;
     void io();
@@ -60,7 +60,8 @@ public:
     virtual int Close();
     void _write();
     void _read();
-
+	bool isConnected() const;
+	
 private:
 	int m_socket;
 	bool m_bConnected;

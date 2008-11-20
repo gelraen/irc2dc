@@ -50,9 +50,9 @@ Connection::~Connection()
 
 
 /*!
-    \fn Connection::FdSet(fd_set& fdset)
+    \fn Connection::FdSet(fd_set& fdset) const
  */
-bool Connection::FdSet( fd_set& fdset )
+bool Connection::FdSet( fd_set& fdset ) const
 {
 	if ( !m_bConnected ) return false;
 
@@ -178,4 +178,14 @@ void Connection::_read()
 				perror("Connection::_read(): read(2) failed:");
 				break;
 		};
-	}}
+	}
+}
+
+/*!
+    \fn bool Connection::isConnected() const
+ */
+bool Connection::isConnected() const
+{
+	return m_bConnected;
+}
+	

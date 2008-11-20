@@ -49,7 +49,7 @@ IRCConnection::~IRCConnection()
 bool IRCConnection::WriteCmd(const string& s)
 {
 	// not sure is it needed. We may place data in buffer even if not connected
-	if (!m_bConnected) return false;
+	if (!isConnected()) return false;
 	
 	// 1) cut command to 510 bytes
 	// 2) put it in m_sendbuf follower by "\r\n"
@@ -70,7 +70,7 @@ bool IRCConnection::WriteCmd(const string& s)
  */
 bool IRCConnection::ReadCmd(string& str)
 {
-	if (!m_bConnected || m_recvbuf.empty()) return false;
+	if (!isConnected() || m_recvbuf.empty()) return false;
 	
 	string::size_type pos;
 	pos=m_recvbuf.find("\r\n");

@@ -50,7 +50,7 @@ DCConnection::~DCConnection()
 bool DCConnection::WriteCmd(const string& s)
 {
 	// not sure is it needed. We may place data in buffer even if not connected
-	if (!m_bConnected) return false;
+	if (!isConnected()) return false;
 	
 	// 1) replace "|" with "&#124;"
 	//		this provided for guarantee that it will be single command
@@ -73,7 +73,7 @@ bool DCConnection::WriteCmd(const string& s)
  */
 bool DCConnection::ReadCmd(string& str)
 {
-	if (!m_bConnected || m_recvbuf.empty()) return false;
+	if (!isConnected() || m_recvbuf.empty()) return false;
 	
 	string::size_type pos=0;
 	pos=m_recvbuf.find("|",0);
