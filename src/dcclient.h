@@ -31,77 +31,32 @@
  *
  *  $Id$
  */
-#include "ircconnection.h"
+#ifndef DCCLIENT_H
+#define DCCLIENT_H
 
-IRCConnection::IRCConnection()
- : Connection()
-{
-}
+#include <dcconfig.h>
+#include <dcconnection.h>
 
+/**
+	@author gelraen <gelraen.ua@gmail.com>
+*/
+class DCClient{
+public:
+    DCClient();
 
-IRCConnection::~IRCConnection()
-{
-}
+    ~DCClient();
+    bool Connect();
+    bool Disconnect();
+    bool readMessage(string& str);
+    bool setConfig(const DCConfig& conf);
+    const DCConfig& getConfig();
+    bool writeMessage(const string& str);
 
-/*!
-    \fn IRCConnection::WriteCmdAsync(const string& str)
- */
-bool IRCConnection::WriteCmdAsync(const string& s)
-{
-	// not sure is it needed. We may place data in buffer even if not connected
-	if (!isConnected()) return false;
-	
-	// 1) cut command to 510 bytes
-	// 2) put it in m_sendbuf follower by "\r\n"
-	string str=s;
-	if (str.length()>510)
-	{
-		str.erase(510,string::npos);
-	}
-	
-	m_sendbuf+=str;
-	m_sendbuf+="\r\n";
-	
-	_write();
-	
-	return true;
-}
+private:
+    DCConfig m_config;
+    DCConnection m_connection;
+protected:
+    virtual string DecodeLock(string lock) const;
+};
 
-
-/*!
-    \fn IRCConnection::ReadCmdAsync(string& str)
- */
-bool IRCConnection::ReadCmdAsync(string& str)
-{
-	if (!isConnected() || m_recvbuf.empty()) return false;
-	
-	_read();
-	
-	string::size_type pos;
-	pos=m_recvbuf.find("\r\n");
-	if (pos==string::npos) return false;
-	str=m_recvbuf.substr(0,pos);
-	m_recvbuf.erase(0,pos+2);
-	return true;
-}
-
-
-/*!
-    \fn IRCConnection::ReadCmdSync(string& str)
- */
-bool IRCConnection::ReadCmdSync(string& str)
-{
-	/// @todo implement me
-	return false;
-}
-
-
-/*!
-    \fn IRCConnection::WriteCmdSync(string& str)
- */
-bool IRCConnection::WriteCmdSync(const string& str)
-{
-	/// @todo implement me
-	return false;
-}
-
+#endif

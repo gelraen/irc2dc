@@ -31,77 +31,12 @@
  *
  *  $Id$
  */
-#include "ircconnection.h"
 
-IRCConnection::IRCConnection()
- : Connection()
+#include <iostream>
+
+using namespace std;
+
+int main()
 {
+	return 0;
 }
-
-
-IRCConnection::~IRCConnection()
-{
-}
-
-/*!
-    \fn IRCConnection::WriteCmdAsync(const string& str)
- */
-bool IRCConnection::WriteCmdAsync(const string& s)
-{
-	// not sure is it needed. We may place data in buffer even if not connected
-	if (!isConnected()) return false;
-	
-	// 1) cut command to 510 bytes
-	// 2) put it in m_sendbuf follower by "\r\n"
-	string str=s;
-	if (str.length()>510)
-	{
-		str.erase(510,string::npos);
-	}
-	
-	m_sendbuf+=str;
-	m_sendbuf+="\r\n";
-	
-	_write();
-	
-	return true;
-}
-
-
-/*!
-    \fn IRCConnection::ReadCmdAsync(string& str)
- */
-bool IRCConnection::ReadCmdAsync(string& str)
-{
-	if (!isConnected() || m_recvbuf.empty()) return false;
-	
-	_read();
-	
-	string::size_type pos;
-	pos=m_recvbuf.find("\r\n");
-	if (pos==string::npos) return false;
-	str=m_recvbuf.substr(0,pos);
-	m_recvbuf.erase(0,pos+2);
-	return true;
-}
-
-
-/*!
-    \fn IRCConnection::ReadCmdSync(string& str)
- */
-bool IRCConnection::ReadCmdSync(string& str)
-{
-	/// @todo implement me
-	return false;
-}
-
-
-/*!
-    \fn IRCConnection::WriteCmdSync(string& str)
- */
-bool IRCConnection::WriteCmdSync(const string& str)
-{
-	/// @todo implement me
-	return false;
-}
-

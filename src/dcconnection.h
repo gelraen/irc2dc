@@ -45,8 +45,10 @@ public:
     DCConnection();
 
     ~DCConnection();
-    virtual bool WriteCmd(const string& str);
-    virtual bool ReadCmd(string& str);
+	virtual bool WriteCmdAsync(const string& str);
+	virtual bool ReadCmdAsync(string& str);
+	virtual bool WriteCmdSync(const string& str);
+	virtual bool ReadCmdSync(string& str);
 
 };
 

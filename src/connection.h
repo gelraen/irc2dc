@@ -53,14 +53,17 @@ public:
 
 	virtual ~Connection();
 	bool FdSet( fd_set& fdset ) const;
-	virtual bool ReadCmd( string& str ) = 0;
-	virtual bool WriteCmd( const string& str ) = 0;
-    void io();
-    int Connect(const struct sockaddr *name, socklen_t namelen);
-    virtual int Close();
-    void _write();
-    void _read();
+	virtual bool ReadCmdAsync( string& str ) = 0;
+	virtual bool WriteCmdAsync( const string& str ) = 0;
+	int Connect(const struct sockaddr *name, socklen_t namelen);
+	virtual int Close();
 	bool isConnected() const;
+    virtual bool ReadCmdSync(string& str) = 0;
+    virtual bool WriteCmdSync(const string& str) = 0;
+protected:
+	void io();
+	void _write();
+	void _read();
 	
 private:
 	int m_socket;

@@ -45,9 +45,9 @@ DCConnection::~DCConnection()
 
 
 /*!
-    \fn DCConnection::WriteCmd(const string& str)
+    \fn DCConnection::WriteCmdAsync(const string& str)
  */
-bool DCConnection::WriteCmd(const string& s)
+bool DCConnection::WriteCmdAsync(const string& s)
 {
 	// not sure is it needed. We may place data in buffer even if not connected
 	if (!isConnected()) return false;
@@ -64,16 +64,21 @@ bool DCConnection::WriteCmd(const string& s)
 	}
 	m_sendbuf+=str;
 	m_sendbuf+=string("|");
+	
+	_write(); // send data to server
+	
 	return true;
 }
 
 
 /*!
-    \fn DCConnection::ReadCmd(string& str)
+    \fn DCConnection::ReadCmdAsync(string& str)
  */
-bool DCConnection::ReadCmd(string& str)
+bool DCConnection::ReadCmdAsync(string& str)
 {
 	if (!isConnected() || m_recvbuf.empty()) return false;
+	
+	_read(); // check for new data from server
 	
 	string::size_type pos=0;
 	pos=m_recvbuf.find("|",0);
@@ -81,4 +86,24 @@ bool DCConnection::ReadCmd(string& str)
 	str=m_recvbuf.substr(0,pos);
 	m_recvbuf.erase(0,pos+1);
 	return true;
+}
+
+
+/*!
+    \fn DCConnection::ReadCmdSync(string& str)
+ */
+bool DCConnection::ReadCmdSync(string& str)
+{
+	/// @todo implement me
+	return false;
+}
+
+
+/*!
+    \fn DCConnection::WriteCmdSync(string& str)
+ */
+bool DCConnection::WriteCmdSync(const string& str)
+{
+	/// @todo implement me
+	return false;
 }

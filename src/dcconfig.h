@@ -34,6 +34,10 @@
 #ifndef DCCONFIG_H
 #define DCCONFIG_H
 
+#include <string>
+
+using namespace std;
+
 /**
 	@author gelraen <gelraen.ua@gmail.com>
 */
@@ -43,7 +47,7 @@ public:
 
     ~DCConfig();
 	string m_dc_server;
-	short m_dc_port;
+	unsigned short m_dc_port;
 	string m_dc_nick;
 	string m_dc_description;
 	string m_dc_speed;

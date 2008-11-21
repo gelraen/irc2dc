@@ -46,6 +46,7 @@ Connection::Connection()
 
 Connection::~Connection()
 {
+	Close();
 }
 
 
@@ -77,6 +78,7 @@ void Connection::io()
  */
 int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 {
+	int r=-1;
 	if (m_bConnected)
 	{
 		Close();
@@ -87,7 +89,7 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 		perror("Connection::Connect(): socket(2) failed:");
 		exit(1);
 	}
-	if (connect(m_socket,name,namelen)==-1)
+	if ((r=connect(m_socket,name,namelen))==-1)
 	{
 		perror("Connection::Connect(): connect(2) failed:");	
 	}
@@ -106,6 +108,7 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 			exit(1);
 		}
 	}
+	return r;
 }
 
 
@@ -170,6 +173,8 @@ void Connection::_read()
 	{
 		switch(errno)
 		{
+			case EWOULDBLOCK:
+				break;
 			case ECONNRESET:
 				close(m_socket);
 				m_bConnected=false;
@@ -188,4 +193,3 @@ bool Connection::isConnected() const
 {
 	return m_bConnected;
 }
-	
