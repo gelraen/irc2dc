@@ -87,23 +87,3 @@ bool DCConnection::ReadCmdAsync(string& str)
 	m_recvbuf.erase(0,pos+1);
 	return true;
 }
-
-
-/*!
-    \fn DCConnection::ReadCmdSync(string& str)
- */
-bool DCConnection::ReadCmdSync(string& str)
-{
-	/// @todo implement me
-	return false;
-}
-
-
-/*!
-    \fn DCConnection::WriteCmdSync(string& str)
- */
-bool DCConnection::WriteCmdSync(const string& str)
-{
-	/// @todo implement me
-	return false;
-}

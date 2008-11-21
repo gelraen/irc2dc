@@ -17,7 +17,7 @@
   <kdevautoproject>
     <general>
       <useconfiguration>default</useconfiguration>
-      <activetarget>src/irc2dc</activetarget>
+      <activetarget>src/dctest</activetarget>
     </general>
     <run>
       <runarguments>

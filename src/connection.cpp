@@ -34,6 +34,7 @@
 #include "connection.h"
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <sys/select.h>
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -129,6 +130,9 @@ int Connection::Close()
 
 /*!
     \fn Connection::_write()
+
+	Try to write all data from m_sendbuf.
+	Retrying only if was interrupted by signal.
  */
 void Connection::_write()
 {
@@ -137,7 +141,7 @@ void Connection::_write()
 	while(m_sendbuf.length()>0)
 	{
 		n=write(m_socket,m_sendbuf.c_str(),m_sendbuf.length());
-		if (n==-1) break;
+		if (n==-1&&errno!=EINTR) break;
 		m_sendbuf.erase(0,n);
 	}
 	
@@ -145,9 +149,12 @@ void Connection::_write()
 	{
 		switch(errno)
 		{
+			case EAGAIN:
+				break;
 			case ECONNRESET:
 				close(m_socket);
 				m_bConnected=false;
+				perror("Connection::_write():");
 				break;
 			default:
 				perror("Connection::_write(): write(2) failed:");
@@ -164,9 +171,13 @@ void Connection::_read()
 	if (!m_bConnected) return;
 	char buf[4096]={0};
 	int n=0;
-	while((n=read(m_socket,(void*)buf,4096))>0)
+	for(;;)
 	{
-		m_recvbuf+=string(buf,n);
+		while((n=read(m_socket,(void*)buf,4096))>0)
+		{
+			m_recvbuf+=string(buf,n);
+		}
+		if (n==-1&&errno!=EINTR) break;
 	}
 	
 	if (n==-1)
@@ -178,6 +189,7 @@ void Connection::_read()
 			case ECONNRESET:
 				close(m_socket);
 				m_bConnected=false;
+				perror("Connection::_read():");
 				break;
 			default:
 				perror("Connection::_read(): read(2) failed:");
@@ -192,4 +204,49 @@ void Connection::_read()
 bool Connection::isConnected() const
 {
 	return m_bConnected;
+}
+
+
+/*!
+    \fn Connection::ReadCmdSync(string& str)
+ */
+bool IRCConnection::ReadCmdSync(string& str)
+{
+	if (!isConnected()) return false;
+	
+	fd_set fdset;
+	FD_SET(m_socket,&fdset);
+	
+	while(!ReadCmdAsync(str))
+	{
+		select(m_socket,&fdset,NULL,NULL,NULL); // wait for new data
+	}
+	
+	return true;
+}
+
+
+/*!
+    \fn Connection::WriteCmdSync(string& str)
+ */
+bool IRCConnection::WriteCmdSync(const string& str)
+{
+	if (!isConnected()) return false;
+	
+	fd_set fdset;
+	FD_SET(m_socket,&fdset);
+	
+	// wait indefinitely until socket become ready for writing
+	select(m_socket,NULL,&fdset,NULL,NULL);
+	
+	WriteCmdAsync(str);
+	
+	// try to write until buffer is empty
+	while(!m_sendbuf.empty())
+	{
+		select(m_socket,NULL,&fdset,NULL,NULL);
+		_write();
+	}
+	
+	return true;
 }

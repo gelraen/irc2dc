@@ -58,8 +58,8 @@ public:
 	int Connect(const struct sockaddr *name, socklen_t namelen);
 	virtual int Close();
 	bool isConnected() const;
-    virtual bool ReadCmdSync(string& str) = 0;
-    virtual bool WriteCmdSync(const string& str) = 0;
+    virtual bool ReadCmdSync(string& str);
+    virtual bool WriteCmdSync(const string& str);
 protected:
 	void io();
 	void _write();

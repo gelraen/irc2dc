@@ -84,24 +84,3 @@ bool IRCConnection::ReadCmdAsync(string& str)
 	m_recvbuf.erase(0,pos+2);
 	return true;
 }
-
-
-/*!
-    \fn IRCConnection::ReadCmdSync(string& str)
- */
-bool IRCConnection::ReadCmdSync(string& str)
-{
-	/// @todo implement me
-	return false;
-}
-
-
-/*!
-    \fn IRCConnection::WriteCmdSync(string& str)
- */
-bool IRCConnection::WriteCmdSync(const string& str)
-{
-	/// @todo implement me
-	return false;
-}
-
