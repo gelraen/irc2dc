@@ -210,7 +210,7 @@ bool Connection::isConnected() const
 /*!
     \fn Connection::ReadCmdSync(string& str)
  */
-bool IRCConnection::ReadCmdSync(string& str)
+bool Connection::ReadCmdSync(string& str)
 {
 	if (!isConnected()) return false;
 	
@@ -229,7 +229,7 @@ bool IRCConnection::ReadCmdSync(string& str)
 /*!
     \fn Connection::WriteCmdSync(string& str)
  */
-bool IRCConnection::WriteCmdSync(const string& str)
+bool Connection::WriteCmdSync(const string& str)
 {
 	if (!isConnected()) return false;
 	
