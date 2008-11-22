@@ -128,6 +128,87 @@ bool DCClient::Connect()
 	// now we connected to server, starting registration
 	string cmd;
 	
+	// get Lock
+	for(;;)
+	{
+		m_connection.ReadCmdSync(cmd);
+		if (cmd.length()>=string("$Lock ").length()
+				  &&
+				  cmd.substr(0,string("$Lock ").length())==string("$Lock "))
+		{
+			break;
+		}
+	}
+	
+	// erase "$Lock "
+	cmd.erase(0,string("$Lock ").length());
+	
+	// erase all after first space
+	string::size_type pos;
+	pos=cmd.find(' ');
+	if (pos!=string::npos)
+	{
+		cmd.erase(pos,string::npos);
+	}
+	
+	m_connection.WriteCmdSync(string("$Key ")+DecodeLock(cmd));
+	
+	// read all other unneeded commands from server
+	while(m_connection.ReadCmdAsync(cmd));
+	
+	//starting nick validation
+	for(;;)
+	{
+		m_connection.WriteCmdSync(string("$ValidateNick ")+m_config.m_dc_nick);
+		m_connection.ReadCmdSync(cmd);
+		if (cmd==string("$ValidateDenide"))
+		{
+			cerr << "Nickname \"" << m_config.m_dc_nick << "\" already taken. ";
+			m_config.m_dc_nick+="_";
+			cerr << "Trying \"" << m_config.m_dc_nick << "\"..." << endl;
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	// Nick valid, so next command may be "$GetPass" or "$Hello"
+	if (cmd==string("$GetPass"))
+	{
+		m_connection.WriteCmdSync(string("$MyPass ")+m_config.m_dc_pass);
+		m_connection.ReadCmdSync(cmd);
+		if (cmd==string("$BadPass"))
+		{
+			cerr << "Hub said that our password is incorrect..." << endl;
+			m_connection.Close();
+			return false;
+		}
+	}
+
+	if (cmd.length()>=string("$Hello ").length()
+		   &&
+		   cmd.substr(0,string("$Hello ").length())==string("$Hello "))
+	{
+		cmd.erase(0,string("$Hello ").length());
+		m_config.m_dc_nick=cmd; // new nickname sent in "$Hello" command
+		
+		m_connection.WriteCmdAsync("$Version 1,0096");
+		m_connection.WriteCmdSync(string("$MyINFO $ALL ")+
+								 m_config.m_dc_nick+
+								 string(" ")+
+								 m_config.m_dc_description+
+								 string("$ $")+
+								 m_config.m_dc_speed+
+								 m_config.m_dc_speed_val+
+								 string("$")+
+								 m_config.m_dc_email+
+								 string("$")+
+								 m_config.m_dc_share_size+
+								 string("$"));
+	}
+	
+	return true;
 }
 
 

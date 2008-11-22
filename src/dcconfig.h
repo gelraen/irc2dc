@@ -49,6 +49,7 @@ public:
 	string m_dc_server;
 	unsigned short m_dc_port;
 	string m_dc_nick;
+	string m_dc_pass;
 	string m_dc_description;
 	string m_dc_speed;
 	char m_dc_speed_val;
