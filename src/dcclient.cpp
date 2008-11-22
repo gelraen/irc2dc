@@ -89,6 +89,8 @@ bool DCClient::Connect()
 	p=gethostbyname(m_config.m_dc_server.c_str());
 	if (p==NULL)
 	{
+		cerr << "Can not resolve name \"" << m_config.m_dc_server  << "\""
+				<< endl;
 		herror("DCClient::Connect(): gethostbyname(3) failed");
 		return false;
 	}
@@ -99,7 +101,7 @@ bool DCClient::Connect()
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(m_config.m_dc_port);
 		addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));
-		if (!m_connection.Connect((sockaddr*)&addr,sizeof(addr)))
+		if (m_connection.Connect((sockaddr*)&addr,sizeof(addr)))
 		{
 			cerr << "DCClient::Connect(): cann't connect to requested address"
 					<< endl;
@@ -112,7 +114,7 @@ bool DCClient::Connect()
 		addr6.sin_family=AF_INET6;
 		addr6.sin_port=htons(m_config.m_dc_port);
 		addr6.sin_addr= *((in6_addr*)(p->h_addr_list[0]));
-		if (!m_connection.Connect((sockaddr*)&addr6,sizeof(addr6)))
+		if (m_connection.Connect((sockaddr*)&addr6,sizeof(addr6)))
 		{
 			cerr << "DCClient::Connect(): cann't connect to requested address"
 					<< endl;
@@ -186,27 +188,28 @@ bool DCClient::Connect()
 		}
 	}
 
-	if (cmd.length()>=string("$Hello ").length()
+	while (!(cmd.length()>=string("$Hello ").length()
 		   &&
-		   cmd.substr(0,string("$Hello ").length())==string("$Hello "))
+		   cmd.substr(0,string("$Hello ").length())==string("$Hello ")))
 	{
-		cmd.erase(0,string("$Hello ").length());
-		m_config.m_dc_nick=cmd; // new nickname sent in "$Hello" command
-		
-		m_connection.WriteCmdAsync("$Version 1,0096");
-		m_connection.WriteCmdSync(string("$MyINFO $ALL ")+
-								 m_config.m_dc_nick+
-								 string(" ")+
-								 m_config.m_dc_description+
-								 string("$ $")+
-								 m_config.m_dc_speed+
-								 m_config.m_dc_speed_val+
-								 string("$")+
-								 m_config.m_dc_email+
-								 string("$")+
-								 m_config.m_dc_share_size+
-								 string("$"));
+		m_connection.ReadCmdSync(cmd);
 	}
+	cmd.erase(0,string("$Hello ").length());
+	m_config.m_dc_nick=cmd; // new nickname sent in "$Hello" command
+	
+	m_connection.WriteCmdAsync("$Version 1,0096");
+	m_connection.WriteCmdSync(string("$MyINFO $ALL ")+
+							 m_config.m_dc_nick+
+							 string(" ")+
+							 m_config.m_dc_description+
+							 string("$ $")+
+							 m_config.m_dc_speed+
+							 m_config.m_dc_speed_val+
+							 string("$")+
+							 m_config.m_dc_email+
+							 string("$")+
+							 m_config.m_dc_share_size+
+							 string("$"));
 	
 	return true;
 }
@@ -257,15 +260,15 @@ const DCConfig& DCClient::getConfig()
 
 
 /*!
-    \fn DCClient::DecodeLock(string lock) const
+    \fn DCClient::DecodeLock(string lock)
  */
-string DCClient::DecodeLock(string lock) const
+string DCClient::DecodeLock(string lock)
 {
 	/*
 	 * algorithm was taken from here:
 	 * http://www.teamfair.info/DC-Protocol.htm#AppendixA
 	*/
-	string r(' ',lock.length());
+	string r(lock.length(),' ');
 	string::size_type i;
 
 	r[0]=lock[0]^lock[lock.length()-2]^lock[lock.length()-1]^5;

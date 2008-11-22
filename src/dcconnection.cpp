@@ -76,9 +76,11 @@ bool DCConnection::WriteCmdAsync(const string& s)
  */
 bool DCConnection::ReadCmdAsync(string& str)
 {
-	if (!isConnected() || m_recvbuf.empty()) return false;
+	if (!isConnected()) return false;
 	
 	_read(); // check for new data from server
+	
+	if (m_recvbuf.empty()) return false;
 	
 	string::size_type pos=0;
 	pos=m_recvbuf.find("|",0);

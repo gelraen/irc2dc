@@ -56,7 +56,8 @@ private:
     DCConfig m_config;
     DCConnection m_connection;
 protected:
-    virtual string DecodeLock(string lock) const;
+	public:
+    static string DecodeLock(string lock);
 };
 
 #endif

@@ -39,6 +39,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include <iostream>
+
 Connection::Connection()
 {
 	m_bConnected=false;
@@ -85,14 +87,15 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 		Close();
 	}
 	m_socket=socket(name->sa_family,SOCK_STREAM,0);
-	if (m_socket!=-1)
+	if (m_socket==-1)
 	{
 		perror("Connection::Connect(): socket(2) failed:");
 		exit(1);
 	}
 	if ((r=connect(m_socket,name,namelen))==-1)
 	{
-		perror("Connection::Connect(): connect(2) failed:");	
+		perror("Connection::Connect(): connect(2) failed:");
+		close(m_socket);
 	}
 	else
 	{
@@ -142,6 +145,7 @@ void Connection::_write()
 	{
 		n=write(m_socket,m_sendbuf.c_str(),m_sendbuf.length());
 		if (n==-1&&errno!=EINTR) break;
+		cerr << "> " << m_sendbuf.substr(0,n) << endl;
 		m_sendbuf.erase(0,n);
 	}
 	
@@ -176,8 +180,9 @@ void Connection::_read()
 		while((n=read(m_socket,(void*)buf,4096))>0)
 		{
 			m_recvbuf+=string(buf,n);
+			cerr << "< " << string(buf,n) << endl;
 		}
-		if (n==-1&&errno!=EINTR) break;
+		if (n==0||(n==-1&&errno!=EINTR)) break;
 	}
 	
 	if (n==-1)
@@ -215,11 +220,13 @@ bool Connection::ReadCmdSync(string& str)
 	if (!isConnected()) return false;
 	
 	fd_set fdset;
+	FD_ZERO(&fdset);
 	FD_SET(m_socket,&fdset);
 	
 	while(!ReadCmdAsync(str))
 	{
-		select(m_socket,&fdset,NULL,NULL,NULL); // wait for new data
+		// !!! NEVER forget about +1 here !!!
+		select(m_socket+1,&fdset,NULL,NULL,NULL); // wait for new data
 	}
 	
 	return true;
@@ -234,10 +241,11 @@ bool Connection::WriteCmdSync(const string& str)
 	if (!isConnected()) return false;
 	
 	fd_set fdset;
+	FD_ZERO(&fdset);
 	FD_SET(m_socket,&fdset);
 	
 	// wait indefinitely until socket become ready for writing
-	select(m_socket,NULL,&fdset,NULL,NULL);
+	select(m_socket+1,NULL,&fdset,NULL,NULL);
 	
 	WriteCmdAsync(str);
 	

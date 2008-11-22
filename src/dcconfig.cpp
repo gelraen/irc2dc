@@ -35,14 +35,14 @@
 
 DCConfig::DCConfig()
 {
-	string m_dc_server="127.0.0.1";
-	short m_dc_port=411;
-	string m_dc_nick="irc2dc";
-	string m_dc_description="IRC-to-DC++ gate bot";
-	string m_dc_speed="100";
-	char m_dc_speed_val=1;
-	string m_dc_email="i.dont.like@spam.com";
-	string m_dc_share_size="1073741825"; // 1GB + 1 byte
+	m_dc_server="127.0.0.1";
+	m_dc_port=411;
+	m_dc_nick="irc2dc";
+	m_dc_description="IRC-to-DC++ gate bot";
+	m_dc_speed="100";
+	m_dc_speed_val=1;
+	m_dc_email="i.dont.like@spam.com";
+	m_dc_share_size="1073741825"; // 1GB + 1 byte
 }
 
 

@@ -36,7 +36,24 @@
 
 using namespace std;
 
+#include <dcconfig.h>
+#include <dcclient.h>
+
 int main()
 {
+	DCClient cl;
+	DCConfig conf;
+	conf.m_dc_server="dc";
+	if (!cl.setConfig(conf))
+	{
+		cerr << "Incorrect config" << endl;
+		return 1;
+	}
+	
+	cl.Connect();
+	cerr << "Connected" << endl;
+	string t;
+	cin >> t;
+	cl.Disconnect();
 	return 0;
 }
