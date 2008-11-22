@@ -51,12 +51,14 @@ public:
     bool setConfig(const DCConfig& conf);
     const DCConfig& getConfig();
     bool writeMessage(const string& str);
-
+    bool isLoggedIn() const;
+    int FdSet(fd_set& fdset) const;
+	
 private:
     DCConfig m_config;
     DCConnection m_connection;
+	bool m_bLoggedIn;
 protected:
-	public:
     static string DecodeLock(string lock);
 };
 

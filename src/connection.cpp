@@ -56,13 +56,13 @@ Connection::~Connection()
 /*!
     \fn Connection::FdSet(fd_set& fdset) const
  */
-bool Connection::FdSet( fd_set& fdset ) const
+int Connection::FdSet( fd_set& fdset ) const
 {
-	if ( !m_bConnected ) return false;
+	if ( !m_bConnected ) return -1;
 
 	FD_SET( m_socket,&fdset ); // adding our socket descriptor to fdset
 
-	return true;
+	return m_socket;
 }
 
 
@@ -145,7 +145,7 @@ void Connection::_write()
 	{
 		n=write(m_socket,m_sendbuf.c_str(),m_sendbuf.length());
 		if (n==-1&&errno!=EINTR) break;
-		cerr << "> " << m_sendbuf.substr(0,n) << endl;
+// 		cerr << "> " << m_sendbuf.substr(0,n) << endl;
 		m_sendbuf.erase(0,n);
 	}
 	
@@ -180,7 +180,7 @@ void Connection::_read()
 		while((n=read(m_socket,(void*)buf,4096))>0)
 		{
 			m_recvbuf+=string(buf,n);
-			cerr << "< " << string(buf,n) << endl;
+// 			cerr << "< " << string(buf,n) << endl;
 		}
 		if (n==0||(n==-1&&errno!=EINTR)) break;
 	}

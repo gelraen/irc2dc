@@ -52,7 +52,7 @@ public:
 	Connection();
 
 	virtual ~Connection();
-	bool FdSet( fd_set& fdset ) const;
+	int FdSet( fd_set& fdset ) const;
 	virtual bool ReadCmdAsync( string& str ) = 0;
 	virtual bool WriteCmdAsync( const string& str ) = 0;
 	int Connect(const struct sockaddr *name, socklen_t namelen);

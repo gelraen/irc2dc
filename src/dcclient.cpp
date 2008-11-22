@@ -43,11 +43,13 @@ using namespace std;
 
 DCClient::DCClient()
 {
+	m_bLoggedIn=false;
 }
 
 
 DCClient::~DCClient()
 {
+	Disconnect();
 }
 
 
@@ -58,8 +60,9 @@ DCClient::~DCClient()
  */
 bool DCClient::writeMessage(const string& str)
 {
-	return m_connection.WriteCmdAsync(str);
-	
+	bool r=m_connection.WriteCmdAsync(str);
+	if (!m_connection.isConnected()) m_bLoggedIn=false;
+	return r;
 }
 
 
@@ -210,6 +213,7 @@ bool DCClient::Connect()
 							 string("$")+
 							 m_config.m_dc_share_size+
 							 string("$"));
+	m_bLoggedIn=true;
 	
 	return true;
 }
@@ -222,6 +226,7 @@ bool DCClient::Disconnect()
 {
 	m_connection.WriteCmdSync(string("$Quit ")+m_config.m_dc_nick);
     m_connection.Close();
+	m_bLoggedIn=false;
 }
 
 
@@ -230,7 +235,9 @@ bool DCClient::Disconnect()
  */
 bool DCClient::readMessage(string& str)
 {
-	return m_connection.ReadCmdAsync(str);
+	bool r=m_connection.ReadCmdAsync(str);
+	if (!m_connection.isConnected()) m_bLoggedIn=false;
+	return r;
 }
 
 
@@ -282,4 +289,22 @@ string DCClient::DecodeLock(string lock)
 		r[i]= (((r[i]<<4)&0xf0)|((r[i]>>4)&0x0f));
 	}
 	return r;
+}
+
+
+/*!
+    \fn DCClient::isLoggedIn() const
+ */
+bool DCClient::isLoggedIn() const
+{
+	return m_bLoggedIn;
+}
+
+
+/*!
+    \fn DCClient::FdSet(fd_set& fdset) const
+ */
+int DCClient::FdSet(fd_set& fdset) const
+{
+	return m_connection.FdSet(fdset);
 }

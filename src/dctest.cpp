@@ -34,10 +34,14 @@
 
 #include <iostream>
 
-using namespace std;
-
 #include <dcconfig.h>
 #include <dcclient.h>
+#include <poll.h>
+#include <sys/select.h>
+#include <string>
+
+using namespace std;
+
 
 int main()
 {
@@ -53,7 +57,35 @@ int main()
 	cl.Connect();
 	cerr << "Connected" << endl;
 	string t;
-	cin >> t;
+	
+	pollfd in;
+	in.fd=0;
+	in.events=POLLIN;
+	
+	fd_set fdset;
+	FD_ZERO(&fdset);
+	FD_SET(0,&fdset);
+	int max=cl.FdSet(fdset)+1;
+	
+	for(;;)
+	{
+		while (cl.readMessage(t))
+		{
+			cout << t << endl;
+		}
+		
+		if (!cl.isLoggedIn()) break;
+		
+		while(poll(&in,1,0))
+		{
+			getline(cin,t);
+			cl.writeMessage(t);
+		}
+		
+		if (!cl.isLoggedIn()) break;
+		select(max,&fdset,NULL,NULL,NULL);
+	}
+	
 	cl.Disconnect();
 	return 0;
 }
