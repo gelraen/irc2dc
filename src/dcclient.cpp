@@ -39,6 +39,7 @@
 #endif
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
 DCClient::DCClient()
@@ -56,10 +57,11 @@ DCClient::~DCClient()
 
 
 /*!
-    \fn DCClient::writeMessage(const string& str)
+    \fn DCClient::writeCommand(const string& str)
  */
-bool DCClient::writeMessage(const string& str)
+bool DCClient::writeCommand(const string& str)
 {
+	if (!m_bLoggedIn) return false;
 	bool r=m_connection.WriteCmdAsync(str);
 	if (!m_connection.isConnected()) m_bLoggedIn=false;
 	return r;
@@ -143,6 +145,7 @@ bool DCClient::Connect()
 		{
 			break;
 		}
+		if (!m_connection.isConnected()) return false;
 	}
 	
 	// erase "$Lock "
@@ -157,15 +160,19 @@ bool DCClient::Connect()
 	}
 	
 	m_connection.WriteCmdSync(string("$Key ")+DecodeLock(cmd));
+	if (!m_connection.isConnected()) return false;
 	
 	// read all other unneeded commands from server
 	while(m_connection.ReadCmdAsync(cmd));
+	if (!m_connection.isConnected()) return false;
 	
 	//starting nick validation
 	for(;;)
 	{
 		m_connection.WriteCmdSync(string("$ValidateNick ")+m_config.m_dc_nick);
+		if (!m_connection.isConnected()) return false;
 		m_connection.ReadCmdSync(cmd);
+		if (!m_connection.isConnected()) return false;
 		if (cmd==string("$ValidateDenide"))
 		{
 			cerr << "Nickname \"" << m_config.m_dc_nick << "\" already taken. ";
@@ -197,10 +204,13 @@ bool DCClient::Connect()
 	{
 		m_connection.ReadCmdSync(cmd);
 	}
+	if (!m_connection.isConnected()) return false;
+	
 	cmd.erase(0,string("$Hello ").length());
 	m_config.m_dc_nick=cmd; // new nickname sent in "$Hello" command
 	
 	m_connection.WriteCmdAsync("$Version 1,0096");
+	if (!m_connection.isConnected()) return false;
 	m_connection.WriteCmdSync(string("$MyINFO $ALL ")+
 							 m_config.m_dc_nick+
 							 string(" ")+
@@ -213,6 +223,7 @@ bool DCClient::Connect()
 							 string("$")+
 							 m_config.m_dc_share_size+
 							 string("$"));
+	if (!m_connection.isConnected()) return false;
 	m_bLoggedIn=true;
 	
 	return true;
@@ -224,6 +235,7 @@ bool DCClient::Connect()
  */
 bool DCClient::Disconnect()
 {
+	if (!m_bLoggedIn) return false;
 	m_connection.WriteCmdSync(string("$Quit ")+m_config.m_dc_nick);
     m_connection.Close();
 	m_bLoggedIn=false;
@@ -231,10 +243,11 @@ bool DCClient::Disconnect()
 
 
 /*!
-    \fn DCClient::readMessage(string& str)
+    \fn DCClient::readCommand(string& str)
  */
-bool DCClient::readMessage(string& str)
+bool DCClient::readCommand(string& str)
 {
+	if (!m_bLoggedIn) return false;
 	bool r=m_connection.ReadCmdAsync(str);
 	if (!m_connection.isConnected()) m_bLoggedIn=false;
 	return r;
@@ -288,6 +301,25 @@ string DCClient::DecodeLock(string lock)
 	{
 		r[i]= (((r[i]<<4)&0xf0)|((r[i]>>4)&0x0f));
 	}
+	
+	vector<char> specChars;
+	vector<string> replaceWith;
+	specChars.push_back(0);		replaceWith.push_back("/%DCN000%/");
+	specChars.push_back(5);		replaceWith.push_back("/%DCN005%/");
+	specChars.push_back(36);	replaceWith.push_back("/%DCN036%/");
+	specChars.push_back(96);	replaceWith.push_back("/%DCN096%/");
+	specChars.push_back(124);	replaceWith.push_back("/%DCN124%/");
+	specChars.push_back(126);	replaceWith.push_back("/%DCN126%/");
+
+	int j;
+	for(j=0;j<specChars.size();j++)
+	{
+		while ((i=r.find(specChars[j]))!=string::npos)
+		{
+			r.replace(i,1,replaceWith[j]);
+		}
+	}
+	
 	return r;
 }
 

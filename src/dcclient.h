@@ -47,10 +47,10 @@ public:
     ~DCClient();
     bool Connect();
     bool Disconnect();
-    bool readMessage(string& str);
+    bool readCommand(string& str);
     bool setConfig(const DCConfig& conf);
     const DCConfig& getConfig();
-    bool writeMessage(const string& str);
+	bool writeCommand(const string& str);
     bool isLoggedIn() const;
     int FdSet(fd_set& fdset) const;
 	

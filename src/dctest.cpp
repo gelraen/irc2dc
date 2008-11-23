@@ -47,14 +47,20 @@ int main()
 {
 	DCClient cl;
 	DCConfig conf;
-	conf.m_dc_server="dc";
+	conf.m_dc_server="dc.univ.kiev.ua";
+	conf.m_dc_port=6666;
+	conf.m_dc_share_size="10";
 	if (!cl.setConfig(conf))
 	{
 		cerr << "Incorrect config" << endl;
 		return 1;
 	}
 	
-	cl.Connect();
+	if (!cl.Connect())
+	{
+		cerr << "Connection error!" << endl;
+		return 1;
+	}
 	cerr << "Connected" << endl;
 	string t;
 	
@@ -63,13 +69,11 @@ int main()
 	in.events=POLLIN;
 	
 	fd_set fdset;
-	FD_ZERO(&fdset);
-	FD_SET(0,&fdset);
-	int max=cl.FdSet(fdset)+1;
+	int max;
 	
 	for(;;)
 	{
-		while (cl.readMessage(t))
+		while (cl.readCommand(t))
 		{
 			cout << t << endl;
 		}
@@ -79,12 +83,18 @@ int main()
 		while(poll(&in,1,0))
 		{
 			getline(cin,t);
-			cl.writeMessage(t);
+			cl.writeCommand(t);
 		}
 		
 		if (!cl.isLoggedIn()) break;
+		
+		FD_ZERO(&fdset);
+		FD_SET(0,&fdset);
+		max=cl.FdSet(fdset)+1;
+		
 		select(max,&fdset,NULL,NULL,NULL);
 	}
+	
 	
 	cl.Disconnect();
 	return 0;
