@@ -53,6 +53,7 @@ public:
 	bool writeCommand(const string& str);
     bool isLoggedIn() const;
     int FdSet(fd_set& fdset) const;
+    bool writeMessage(const string& str);
 	
 private:
     DCConfig m_config;

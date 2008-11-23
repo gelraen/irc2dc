@@ -31,58 +31,68 @@
  *
  *  $Id$
  */
-#include "ircconnection.h"
 
-IRCConnection::IRCConnection()
- : Connection()
+#include <iostream>
+#include <ircconfig.h>
+#include <ircclient.h>
+#include <poll.h>
+#include <sys/select.h>
+#include <string>
+
+using namespace std;
+
+int main()
 {
-}
-
-
-IRCConnection::~IRCConnection()
-{
-}
-
-/*!
-    \fn IRCConnection::WriteCmdAsync(const string& str)
- */
-bool IRCConnection::WriteCmdAsync(const string& s)
-{
-	// not sure is it needed. We may place data in buffer even if not connected
-	if (!isConnected()) return false;
-	
-	// 1) cut command to 510 bytes
-	// 2) put it in m_sendbuf follower by "\r\n"
-	string str=s;
-	if (str.length()>510)
+	IRCClient cl;
+	IRCConfig conf;
+	conf.m_irc_server="10.45.64.2";
+	conf.m_irc_port=6667;
+	if (!cl.setConfig(conf))
 	{
-		str.erase(510,string::npos);
+		cerr << "Incorrect config" << endl;
+		return 1;
 	}
 	
-	m_sendbuf+=str;
-	m_sendbuf+="\r\n";
+	if (!cl.Connect())
+	{
+		cerr << "Connection error!" << endl;
+		return 1;
+	}
+	cerr << "Connected" << endl;
+	string t;
 	
-	_write();
+	pollfd in;
+	in.fd=0;
+	in.events=POLLIN;
 	
-	return true;
-}
-
-
-/*!
-    \fn IRCConnection::ReadCmdAsync(string& str)
- */
-bool IRCConnection::ReadCmdAsync(string& str)
-{
-	if (!isConnected()) return false;
+	fd_set fdset;
+	int max;
 	
-	_read(); // check for new data from server
+	for(;;)
+	{
+		while (cl.readCommand(t))
+		{
+			cout << t << endl;
+		}
+		
+		if (!cl.isLoggedIn()) break;
+		
+		while(poll(&in,1,0))
+		{
+			getline(cin,t);
+			cl.writeCommand(t);
+		}
+		
+		if (!cl.isLoggedIn()) break;
+		
+		FD_ZERO(&fdset);
+		FD_SET(0,&fdset);
+		max=cl.FdSet(fdset)+1;
+		
+		select(max,&fdset,NULL,NULL,NULL);
+	}
 	
-	if (m_recvbuf.empty()) return false;
 	
-	string::size_type pos;
-	pos=m_recvbuf.find("\r\n");
-	if (pos==string::npos) return false;
-	str=m_recvbuf.substr(0,pos);
-	m_recvbuf.erase(0,pos+2);
-	return true;
+	cl.Disconnect();
+	return 0;
 }

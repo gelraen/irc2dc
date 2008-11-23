@@ -31,58 +31,34 @@
  *
  *  $Id$
  */
-#include "ircconnection.h"
+#ifndef IRCCLIENT_H
+#define IRCCLIENT_H
 
-IRCConnection::IRCConnection()
- : Connection()
-{
-}
+#include <ircconfig.h>
+#include <ircconnection.h>
 
+/**
+	@author gelraen <gelraen.ua@gmail.com>
+*/
+class IRCClient{
+public:
+    IRCClient();
 
-IRCConnection::~IRCConnection()
-{
-}
+    ~IRCClient();
+	bool Connect();
+	bool Disconnect();
+	bool readCommand(string& str);
+	bool setConfig(const IRCConfig& conf);
+	const IRCConfig& getConfig();
+	bool writeCommand(const string& str);
+	bool isLoggedIn() const;
+	int FdSet(fd_set& fdset) const;
+	bool writeMessage(const string& str);
+	
+private:
+	IRCConfig m_config;
+	IRCConnection m_connection;
+	bool m_bLoggedIn;
+};
 
-/*!
-    \fn IRCConnection::WriteCmdAsync(const string& str)
- */
-bool IRCConnection::WriteCmdAsync(const string& s)
-{
-	// not sure is it needed. We may place data in buffer even if not connected
-	if (!isConnected()) return false;
-	
-	// 1) cut command to 510 bytes
-	// 2) put it in m_sendbuf follower by "\r\n"
-	string str=s;
-	if (str.length()>510)
-	{
-		str.erase(510,string::npos);
-	}
-	
-	m_sendbuf+=str;
-	m_sendbuf+="\r\n";
-	
-	_write();
-	
-	return true;
-}
-
-
-/*!
-    \fn IRCConnection::ReadCmdAsync(string& str)
- */
-bool IRCConnection::ReadCmdAsync(string& str)
-{
-	if (!isConnected()) return false;
-	
-	_read(); // check for new data from server
-	
-	if (m_recvbuf.empty()) return false;
-	
-	string::size_type pos;
-	pos=m_recvbuf.find("\r\n");
-	if (pos==string::npos) return false;
-	str=m_recvbuf.substr(0,pos);
-	m_recvbuf.erase(0,pos+2);
-	return true;
-}
+#endif

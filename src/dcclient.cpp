@@ -340,3 +340,12 @@ int DCClient::FdSet(fd_set& fdset) const
 {
 	return m_connection.FdSet(fdset);
 }
+
+
+/*!
+    \fn DCClient::writeMessage(const string& str)
+ */
+bool DCClient::writeMessage(const string& str)
+{
+	return writeCommand(string("<")+m_config.m_dc_nick+string("> ")+str);
+}
