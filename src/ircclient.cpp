@@ -149,6 +149,9 @@ bool IRCClient::Connect()
 							 string(" 0 * :")+m_config.m_irc_realname);
 	if (!m_connection.isConnected()) return false;
 	
+	m_connection.WriteCmdSync(string("JOIN ")+m_config.m_irc_channel);
+	if (!m_connection.isConnected()) return false;
+	
 	m_bLoggedIn=true;
 	
 	return true;
