@@ -52,7 +52,7 @@ public:
     const DCConfig& getConfig();
 	bool writeCommand(const string& str);
     bool isLoggedIn() const;
-    int FdSet(fd_set& fdset) const;
+    int FdSet(fd_set& fdset);
     bool writeMessage(const string& str);
 	
 private:

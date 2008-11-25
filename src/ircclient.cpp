@@ -231,9 +231,9 @@ bool IRCClient::isLoggedIn() const
 
 
 /*!
-    \fn IRCClient::FdSet(fd_set& fdset) const
+    \fn IRCClient::FdSet(fd_set& fdset)
  */
-int IRCClient::FdSet(fd_set& fdset) const
+int IRCClient::FdSet(fd_set& fdset)
 {
 	return m_connection.FdSet(fdset);
 }

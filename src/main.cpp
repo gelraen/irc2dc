@@ -35,6 +35,9 @@
 #include <iostream>
 #include <translator.h>
 #include <config.h>
+#include <dcclient.h>
+#include <ircclient.h>
+#include <sys/select.h>
 
 using namespace std;
 
@@ -42,18 +45,94 @@ int main()
 {
 	Config conf;
 	Translator trans;
+	IRCClient irc;
+	DCClient dc;
 	
+	// config options
 	conf.m_irc_channel="#chat";
-	conf.m_dc_nick="test_";
+	conf.m_dc_server="dc";
+	conf.m_irc_server="10.45.64.2";
+	conf.m_irc_port=6667;
 	
-	trans.setConfig(conf);
+	if (!irc.setConfig(conf))
+	{
+		cerr << "Incorrect config for IRC" << endl;
+		return 1;
+	}
+	if (!dc.setConfig(conf))
+	{
+		cerr << "Incorrect config for DC++" << endl;
+		return 1;
+	}
+
 	
 	string str;
 	
-	if (!trans.IRCtoDC(":test!be@kaka PRIVMSG #chat :bebe",str))
+	cerr << "Connecting to IRC... ";
+	if (!irc.Connect())
 	{
-		cerr << "Error!" << endl;
+		cerr << "ERROR" << endl;
+		return 2;
+	} else cerr << "OK" << endl;
+	
+	cerr << "Connecting to DC++... ";
+	if (!dc.Connect())
+	{
+		cerr << "ERROR" << endl;
+		return 2;
+	} else cerr << "OK" << endl;
+	
+	// now recreate config, cause DC hub may change our nickname
+	conf=Config(irc.getConfig(),dc.getConfig());
+	
+	if (!trans.setConfig(conf))
+	{
+		cerr << "Incorrect config for Translator" << endl;
+		return 1;
 	}
-	else cout << str << endl;
+	
+	fd_set rset;
+	int max=0,t;
+	
+	for(;;)
+	{
+		// recreate rset
+		FD_ZERO(&rset);
+		
+		t=irc.FdSet(rset);
+		max=(t>max)?t:max;
+		
+		t=dc.FdSet(rset);
+		max=(t>max)?t:max;
+		
+		select(max+1,&rset,NULL,NULL,NULL);
+		
+		while(irc.readCommand(str))
+		{
+			if (trans.IRCtoDC(str,str))
+			{
+				dc.writeCommand(str);
+			}
+			if (!dc.isLoggedIn())
+			{
+				cerr << "DC++ connection closed. Exiting." << endl;
+				return 0;
+			}
+		}
+		
+		while(dc.readCommand(str))
+		{
+			if (trans.DCtoIRC(str,str))
+			{
+				irc.writeCommand(str);
+			}
+			if (!irc.isLoggedIn())
+			{
+				cerr << "IRC connection closed. Exiting." << endl;
+				return 0;
+			}
+		}
+	}
+	
 	return 0;
 }

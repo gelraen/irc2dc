@@ -334,9 +334,9 @@ bool DCClient::isLoggedIn() const
 
 
 /*!
-    \fn DCClient::FdSet(fd_set& fdset) const
+    \fn DCClient::FdSet(fd_set& fdset)
  */
-int DCClient::FdSet(fd_set& fdset) const
+int DCClient::FdSet(fd_set& fdset)
 {
 	return m_connection.FdSet(fdset);
 }
