@@ -15,13 +15,13 @@
     <projectname>irc2dc</projectname>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
-    <defaultencoding></defaultencoding>
+    <description/>
+    <defaultencoding/>
   </general>
   <kdevautoproject>
     <general>
       <useconfiguration>debug</useconfiguration>
-      <activetarget>src/dctest</activetarget>
+      <activetarget>src/irc2dc</activetarget>
     </general>
     <run>
       <runarguments>
@@ -34,8 +34,8 @@
         <irc2dc>/usr/home/imax/work/irc2dc/debug/./</irc2dc>
       </cwd>
       <mainprogram>/usr/home/imax/work/irc2dc/debug</mainprogram>
-      <programargs></programargs>
-      <globaldebugarguments></globaldebugarguments>
+      <programargs/>
+      <globaldebugarguments/>
       <globalcwd>/usr/home/imax/work/irc2dc/debug</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <terminal>false</terminal>
@@ -71,7 +71,7 @@
       <runmultiplejobs>false</runmultiplejobs>
       <numberofjobs>1</numberofjobs>
       <dontact>false</dontact>
-      <makebin></makebin>
+      <makebin/>
       <prio>0</prio>
     </make>
   </kdevautoproject>
@@ -132,6 +132,8 @@
     <groups>
       <group pattern="*.h" name="Header files" />
       <group pattern="*.cpp" name="Source files" />
+      <hidenonprojectfiles>false</hidenonprojectfiles>
+      <hidenonlocation>false</hidenonlocation>
     </groups>
     <tree>
       <hidepatterns>*.o,*.lo,CVS</hidepatterns>
@@ -143,7 +145,7 @@
     <projectdoc>
       <docsystem>Doxygen Documentation Collection</docsystem>
       <docurl>irc2dc.tag</docurl>
-      <usermanualurl></usermanualurl>
+      <usermanualurl/>
     </projectdoc>
   </kdevdocumentation>
   <substmap>
@@ -195,7 +197,7 @@
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet></prefixGet>
+      <prefixGet/>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
@@ -216,11 +218,11 @@
   </cppsupportpart>
   <kdevdebugger>
     <general>
-      <gdbpath></gdbpath>
+      <gdbpath/>
       <dbgshell>libtool --mode=execute</dbgshell>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
@@ -233,7 +235,7 @@
     </display>
   </kdevdebugger>
   <ctagspart>
-    <customArguments></customArguments>
+    <customArguments/>
     <customTagfilePath>/usr/home/imax/work/irc2dc/tags</customTagfilePath>
     <activeTagsFiles/>
   </ctagspart>

@@ -31,21 +31,33 @@
  *
  *  $Id$
  */
+#ifndef TRANSLATOR_H
+#define TRANSLATOR_H
+
 #include "config.h"
+#include <regex.h>
 
-Config::Config()
-	: IRCConfig(), DCConfig()
-{
-}
+/**
+	@author gelraen <gelraen.ua@gmail.com>
+*/
+class Translator{
+public:
+    Translator();
 
-Config::Config(const IRCConfig& c1,const DCConfig& c2)
-	: IRCConfig(c1), DCConfig(c2)
-{
-}
+    ~Translator();
+    bool acceptableIRCMessage(const string& str);
+    bool acceptableDCMessage(const string& str);
+    bool IRCtoDC(const string& src,string& dst);
+    bool DCtoIRC(const string& src,string& dst);
+    const Config& getConfig();
+    bool setConfig(const Config& conf);
 
+protected:
+    Config m_config;
+	bool m_bConfigured;
+	regex_t m_IRCRe;
+	regex_t m_DCRe;
+	
+};
 
-Config::~Config()
-{
-}
-
-
+#endif

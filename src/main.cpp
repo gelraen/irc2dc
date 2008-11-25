@@ -33,11 +33,27 @@
  */
 
 #include <iostream>
+#include <translator.h>
+#include <config.h>
 
 using namespace std;
 
 int main()
 {
-	cout << "Hello, world!" << endl;
+	Config conf;
+	Translator trans;
+	
+	conf.m_irc_channel="#chat";
+	conf.m_dc_nick="test_";
+	
+	trans.setConfig(conf);
+	
+	string str;
+	
+	if (!trans.IRCtoDC(":test!be@kaka PRIVMSG #chat :bebe",str))
+	{
+		cerr << "Error!" << endl;
+	}
+	else cout << str << endl;
 	return 0;
 }
