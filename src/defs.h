@@ -32,114 +32,36 @@
  *  $Id$
  */
 
-#include "defs.h"
+#ifndef __DEFS_H__
+#define __DEFS_H__
 
 #include <iostream>
-#include <translator.h>
-#include <config.h>
-#include <dcclient.h>
-#include <ircclient.h>
-#include <sys/select.h>
-
+#include <cstdlib>
+#include <string>
 using namespace std;
 
-int main()
-{
-	Config conf;
-	Translator trans;
-	IRCClient irc;
-	DCClient dc;
-	LogLevel=0xffffffff; // log all
-	LogLevel&=(~LOG_RAWDATA); // except raw data
-	
-	// config options
-	conf.m_irc_channel="#chat";
-	conf.m_dc_server="dc";
-	conf.m_irc_server="10.45.64.2";
-	conf.m_irc_port=6667;
-	
-	conf.m_dc_nick="IRC";
-	conf.m_irc_nick="DC";
-	
-	if (!irc.setConfig(conf))
-	{
-		LOG(LOG_ERROR,"Incorrect config for IRC");
-		return 1;
-	}
-	if (!dc.setConfig(conf))
-	{
-		LOG(LOG_ERROR,"Incorrect config for DC++");
-		return 1;
-	}
+extern unsigned long LogLevel;
 
-	
-	string str;
-	
-	LOG(LOG_NOTICE,"Connecting to IRC... ");
-	if (!irc.Connect())
+const int LOG_ERROR=0x0001;
+const int LOG_WARNING=0x0002;
+const int LOG_RAWDATA=0x0004;
+const int LOG_NOTICE=0x0008;
+const int LOG_STATE=0x0010;
+const int LOG_COMMAND=0x0020;
+
+inline void LOG(int n,const string& str)
+{
+	if ((n)&LogLevel)
 	{
-		LOG(LOG_ERROR,"ERROR");
-		return 2;
-	} else LOG(LOG_NOTICE,"OK");
-	
-	LOG(LOG_NOTICE,"Connecting to DC++... ");
-	if (!dc.Connect())
-	{
-		LOG(LOG_ERROR,"ERROR");
-		return 2;
-	} else LOG(LOG_NOTICE,"OK");
-	
-	// now recreate config, cause DC hub may change our nickname
-	conf=Config(irc.getConfig(),dc.getConfig());
-	
-	if (!trans.setConfig(conf))
-	{
-		LOG(LOG_ERROR,"Incorrect config for Translator");
-		return 1;
+		cerr << str << endl;
 	}
-	
-	fd_set rset;
-	int max=0,t;
-	
-	for(;;)
-	{
-		// recreate rset
-		FD_ZERO(&rset);
-		
-		t=irc.FdSet(rset);
-		max=(t>max)?t:max;
-		
-		t=dc.FdSet(rset);
-		max=(t>max)?t:max;
-		
-		select(max+1,&rset,NULL,NULL,NULL);
-		
-		while(irc.readCommand(str))
-		{
-			if (trans.IRCtoDC(str,str))
-			{
-				dc.writeCommand(str);
-			}
-			if (!dc.isLoggedIn())
-			{
-				LOG(LOG_ERROR,"DC++ connection closed. Exiting.");
-				return 0;
-			}
-		}
-		
-		while(dc.readCommand(str))
-		{
-			if (trans.DCtoIRC(str,str))
-			{
-				irc.writeCommand(str);
-			}
-			if (!irc.isLoggedIn())
-			{
-				LOG(LOG_ERROR,"IRC connection closed. Exiting.");
-				return 0;
-			}
-		}
-	}
-	
-	return 0;
 }
+
+inline string int2str(int n)
+{
+	char buf[20]={0};
+	sprintf(buf,"%d",n);
+	return string(buf);
+}
+
+#endif // __DEFS_H__

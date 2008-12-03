@@ -31,6 +31,8 @@
  *
  *  $Id$
  */
+ 
+#include "defs.h"
 #include "connection.h"
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -89,12 +91,12 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 	m_socket=socket(name->sa_family,SOCK_STREAM,0);
 	if (m_socket==-1)
 	{
-		perror("Connection::Connect(): socket(2) failed:");
+		perror("Connection::Connect(): socket(2) failed");
 		exit(1);
 	}
 	if ((r=connect(m_socket,name,namelen))==-1)
 	{
-		perror("Connection::Connect(): connect(2) failed:");
+		perror("Connection::Connect(): connect(2) failed");
 		close(m_socket);
 	}
 	else
@@ -103,12 +105,12 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 		int fl;
 		if ((fl=fcntl(m_socket,F_GETFL))==-1)
 		{
-			perror("Connection::Connect(): fcntl(2)(socket,F_GETFL) failed:");
+			perror("Connection::Connect(): fcntl(2)(socket,F_GETFL) failed");
 			exit(1);
 		}
 		if (fcntl(m_socket,F_SETFL,fl|O_NONBLOCK)==-1)
 		{
-			perror("Connection::Connect(): fcntl(2)(socket,F_SETFL) failed:");
+			perror("Connection::Connect(): fcntl(2)(socket,F_SETFL) failed");
 			exit(1);
 		}
 	}
@@ -145,7 +147,8 @@ void Connection::_write()
 	{
 		n=write(m_socket,m_sendbuf.c_str(),m_sendbuf.length());
 		if (n==-1&&errno!=EINTR) break;
-//		cerr << "> " << m_sendbuf.substr(0,n) << endl;
+		LOG(LOG_RAWDATA,(string("to ")+int2str(m_socket)+string(" > ")+
+				m_sendbuf.substr(0,n)).c_str());
 		m_sendbuf.erase(0,n);
 	}
 	
@@ -180,7 +183,8 @@ void Connection::_read()
 		while((n=read(m_socket,(void*)buf,4096))>0)
 		{
 			m_recvbuf+=string(buf,n);
-//			cerr << "< " << string(buf,n) << endl;
+			LOG(LOG_RAWDATA,(string("from ")+int2str(m_socket)+string(" > ")+
+					m_sendbuf.substr(0,n)).c_str());
 		}
 		if (n==0||(n==-1&&errno!=EINTR)) break;
 	}

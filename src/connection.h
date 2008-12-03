@@ -66,9 +66,9 @@ protected:
 	void _read();
 	
 private:
-	int m_socket;
 	bool m_bConnected;
 protected:
+	int m_socket;
 	string m_recvbuf;
 	string m_sendbuf;
 };

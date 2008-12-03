@@ -11,7 +11,9 @@
       <keyword>Code</keyword>
     </keywords>
     <versioncontrol>kdevsubversion</versioncontrol>
-    <ignoreparts/>
+    <ignoreparts>
+      <part>kdevvalgrind</part>
+    </ignoreparts>
     <projectname>irc2dc</projectname>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>

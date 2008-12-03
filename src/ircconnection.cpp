@@ -32,6 +32,7 @@
  *  $Id$
  */
 #include "ircconnection.h"
+#include "defs.h"
 
 IRCConnection::IRCConnection()
  : Connection()
@@ -51,15 +52,22 @@ bool IRCConnection::WriteCmdAsync(const string& s)
 	// not sure is it needed. We may place data in buffer even if not connected
 	if (!isConnected()) return false;
 	
-	// 1) cut command to 510 bytes
-	// 2) put it in m_sendbuf follower by "\r\n"
+	// 1) replace all '\r' and '\n' with spaces
+	// 2) cut command to 510 bytes
+	// 3) put it in m_sendbuf follower by "\r\n"
 	string str=s;
+	string::size_type pos=0;
+	while((pos=str.find_first_of("\r\n",pos))!=string::npos)
+	{
+		str.replace(pos,1,1,' ');
+	}
 	if (str.length()>510)
 	{
 		str.erase(510,string::npos);
 	}
 	
 	m_sendbuf+=str;
+	LOG(LOG_COMMAND,string("to ")+int2str(m_socket)+string(" > ")+str);
 	m_sendbuf+="\r\n";
 	
 	_write();
@@ -83,6 +91,7 @@ bool IRCConnection::ReadCmdAsync(string& str)
 	pos=m_recvbuf.find("\r\n");
 	if (pos==string::npos) return false;
 	str=m_recvbuf.substr(0,pos);
+	LOG(LOG_COMMAND,string("from ")+int2str(m_socket)+string(" > ")+str);
 	m_recvbuf.erase(0,pos+2);
 	return true;
 }
