@@ -179,6 +179,7 @@ bool IRCClient::readCommand(string& str)
 {
 	if (!m_bLoggedIn) return false;
 	bool r=m_connection.ReadCmdAsync(str);
+	if (!r) return false;
 	
 	// answer to PINGs
 	if (str.length()>=string("PING").length()
