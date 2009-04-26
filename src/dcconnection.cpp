@@ -90,5 +90,18 @@ bool DCConnection::ReadCmdAsync(string& str)
 	str=m_recvbuf.substr(0,pos);
 	LOG(LOG_COMMAND,string("from ")+int2str(m_socket)+string(" > ")+str);
 	m_recvbuf.erase(0,pos+1);
+	
+	// now replace encoded | and & with normal representation
+	pos=0;
+	while((pos=str.find("&#124;"))!=string::npos)
+	{
+		str.replace(pos,6,"|");
+	}
+	pos=0;
+	while((pos=str.find("&#36;"))!=string::npos)
+	{
+		str.replace(pos,5,"$");
+	}
+	
 	return true;
 }
