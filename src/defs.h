@@ -64,4 +64,6 @@ inline string int2str(int n)
 	return string(buf);
 }
 
+string trim(const string& inStr);
+
 #endif // __DEFS_H__

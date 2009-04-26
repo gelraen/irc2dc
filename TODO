@@ -2,12 +2,12 @@ This release:
  +- normal logging
  - config file
  - forking into background
- - automatic reconnecting
- - CTCP "ACTION" handling
+ + automatic reconnecting
  + handling of multiline messages from DC++
 
 Next releases:
+ - CTCP "ACTION" handling
  - class Poller
  - iconv support
  - multiuser mode
- - handling of kics/bans in IRC
+ - handling of kicks/bans in IRC

@@ -53,7 +53,7 @@ int main()
 	LogLevel&=(~LOG_RAWDATA); // except raw data
 	
 	// config options
-	conf.m_irc_channel="#chat";
+	conf.m_irc_channel="#dc++";
 	conf.m_dc_server="dc";
 	conf.m_irc_server="10.45.64.2";
 	conf.m_irc_port=6667;
@@ -120,11 +120,11 @@ int main()
 			{
 				dc.writeCommand(str);
 			}
-			if (!dc.isLoggedIn())
-			{
-				LOG(LOG_ERROR,"DC++ connection closed. Exiting.");
-				return 0;
-			}
+		}
+		if (!dc.isLoggedIn())
+		{
+			LOG(LOG_WARNING,"DC++ connection closed. Trying to reconnect...");
+			dc.Connect();
 		}
 		
 		while(dc.readCommand(str))
@@ -133,11 +133,11 @@ int main()
 			{
 				irc.writeCommand(str);
 			}
-			if (!irc.isLoggedIn())
-			{
-				LOG(LOG_ERROR,"IRC connection closed. Exiting.");
-				return 0;
-			}
+		}
+		if (!irc.isLoggedIn())
+		{
+			LOG(LOG_WARNING,"IRC connection closed. Trying to reconnect...");
+			irc.Connect();
 		}
 	}
 	

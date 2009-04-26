@@ -32,6 +32,10 @@
  *  $Id$
  */
 #include "config.h"
+#include "defs.h"
+#include <fstream>
+#include <string>
+using namespace std;
 
 Config::Config()
 	: IRCConfig(), DCConfig()
@@ -49,3 +53,38 @@ Config::~Config()
 }
 
 
+/*!
+    \fn Config::ReadFromFile(const string& sConfFile)
+ */
+bool Config::ReadFromFile(const string& sConfFile)
+{
+	string str;
+	ifstream conf(sConfFile.c_str());
+	if (conf.bad()) return false;
+	
+	while (!conf.eof())
+	{
+		getline(conf,str);
+		
+		string::size_type pos=0;
+		str=trim(str);
+		if ((pos=str.find('#'))!=string::npos)
+		{
+			str.erase(pos); // erase all after '#'
+		}
+		
+		/// @todo implement this
+		
+	}
+	
+	return true;
+}
+
+
+/*!
+    \fn Config::getLogFile()
+ */
+const string& Config::getLogFile()
+{
+	return m_sLogFile;
+}

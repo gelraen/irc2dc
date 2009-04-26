@@ -45,9 +45,12 @@ class Config : public IRCConfig, public DCConfig
 public:
     Config();
 	Config(const IRCConfig& c1,const DCConfig& c2);
+	bool ReadFromFile(const string& sConfFile);
+	const string& getLogFile();
 
     ~Config();
-
+protected:
+	string m_sLogFile;
 };
 
 #endif

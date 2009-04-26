@@ -32,4 +32,22 @@
  *  $Id$
  */
 
-unsigned long LogLevel;
+#include "defs.h"
+#include <string>
+#include <cctype>
+using namespace std;
+
+unsigned long LogLevel=0;
+
+string trim(const string& inStr)
+{
+	string::size_type pos=0;
+	string str=inStr;
+	while(isspace(str[pos])) pos++;
+	str.erase(0,pos);
+	pos=str.length()-1;
+	while(isspace(str[pos])) pos--;
+	str.erase(pos+1);
+	return str;
+}
+
