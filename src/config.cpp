@@ -101,10 +101,10 @@ bool Config::ReadFromFile(const string& sConfFile)
 		{
 			str.erase(pos); // erase all after ';'
 		}
-		if (str == "")
+		if (str == ""||(pos=str.find("="))==string::npos)
 			continue;
-		vars[trim(str.substr(0, str.find("=")))] =
-			       		 trim(str.substr(str.find("=") + 1));
+		vars[trim(str.substr(0, pos))] =
+			       		 trim(str.substr(pos + 1));
 	};
 	for (map<string,string>::iterator i = vars.begin(); i != vars.end(); i++)
 		i->second = trim(trim(i->second, '\''), '\"');
