@@ -99,7 +99,7 @@ bool Config::ReadFromFile(const string& sConfFile)
 		str=trim(str);
 		if ((pos=str.find(';'))!=string::npos)
 		{
-			str.erase(pos); // erase all after '#'
+			str.erase(pos); // erase all after ';'
 		}
 		if (str == "")
 			continue;
