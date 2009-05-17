@@ -49,15 +49,8 @@ int main()
 	LogLevel=0xffffffff; // log all
 	LogLevel&=(~LOG_RAWDATA); // except raw data
 	
-	// config options
-	conf.m_irc_channel="#dc++";
-	conf.m_dc_server="dc";
-	conf.m_irc_server="10.45.64.2";
-	conf.m_irc_port=6667;
-	
-	conf.m_dc_nick="IRC";
-	conf.m_irc_nick="DC";
-	
+	conf.ReadFromFile("irc2dc.conf");
+
 	if (!irc.setConfig(conf))
 	{
 		LOG(LOG_ERROR,"Incorrect config for IRC");

@@ -44,7 +44,7 @@ public:
 
     ~IRCConfig();
 	string m_irc_server;
-	short m_irc_port;
+	int m_irc_port;
 	string m_irc_channel;
 	string m_irc_nick;
 	string m_irc_realname;

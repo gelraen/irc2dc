@@ -32,7 +32,10 @@
 #include "defs.h"
 #include <fstream>
 #include <string>
+#include <sstream>
+
 using namespace std;
+
 
 Config::Config()
 	: IRCConfig(), DCConfig()
@@ -49,6 +52,34 @@ Config::~Config()
 {
 }
 
+struct confvar
+{
+	string name;
+	char type; // 's','i'
+	int Config::* np;
+	string Config::* sp;
+};
+
+const confvar varlist[]={
+ {"irc_server",		's',	NULL,	&Config::m_irc_server},
+ {"irc_port",		'i',	&Config::m_irc_port,	NULL},
+ {"irc_nick",		's',	NULL,	&Config::m_irc_nick},
+ {"irc_username",	's',	NULL,	&Config::m_irc_username},
+ {"irc_password",	's',	NULL,	&Config::m_irc_password},
+ {"irc_realname",	's',	NULL,	&Config::m_irc_realname},
+ {"irc_channel",	's',	NULL,	&Config::m_irc_channel},
+ {"dc_server",		's',	NULL,	&Config::m_dc_server},
+ {"dc_port",		'i',	&Config::m_dc_port,	NULL},
+ {"dc_nick",		's',	NULL,	&Config::m_dc_nick},
+ {"dc_pass",		's',	NULL,	&Config::m_dc_pass},
+ {"dc_description",	's',	NULL,	&Config::m_dc_description},
+ {"dc_speed",		's',	NULL,	&Config::m_dc_speed},
+ {"dc_speed_val",	'i',	&Config::m_dc_speed_val,	NULL},
+ {"dc_email",		's',	NULL,	&Config::m_dc_email},
+ {"dc_share_size",	's',	NULL,	&Config::m_dc_share_size},
+ {"logfile",		's',	NULL,	&Config::m_sLogFile},
+ {"",				'\0',	NULL,	NULL} // terminator
+};
 
 /*!
     \fn Config::ReadFromFile(const string& sConfFile)
@@ -57,6 +88,7 @@ bool Config::ReadFromFile(const string& sConfFile)
 {
 	string str;
 	ifstream conf(sConfFile.c_str());
+	
 	if (conf.bad()) return false;
 	
 	while (!conf.eof())
@@ -65,15 +97,35 @@ bool Config::ReadFromFile(const string& sConfFile)
 		
 		string::size_type pos=0;
 		str=trim(str);
-		if ((pos=str.find('#'))!=string::npos)
+		if ((pos=str.find(';'))!=string::npos)
 		{
 			str.erase(pos); // erase all after '#'
 		}
-		
-		/// @todo implement this
-		
-	}
+		if (str == "")
+			continue;
+		vars[trim(str.substr(0, str.find("=")))] =
+			       		 trim(str.substr(str.find("=") + 1));
+	};
+	for (map<string,string>::iterator i = vars.begin(); i != vars.end(); i++)
+		i->second = trim(trim(i->second, '\''), '\"');
 	
+	int i;
+	istringstream s;
+	for(i=0;varlist[i].type!='\0';i++)
+	{
+		if (vars.find(varlist[i].name)==vars.end()) continue;
+		switch (varlist[i].type)
+		{
+			case 's':
+				(this->*(varlist[i].sp))=vars[varlist[i].name];
+				break;
+			case 'i':
+				s.str(vars[varlist[i].name]);
+				s >> (this->*(varlist[i].np));
+				break;
+		}
+	}
+
 	return true;
 }
 

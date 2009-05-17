@@ -1,6 +1,6 @@
 This release:
  +- normal logging
- - config file
+ + config file
  - forking into background
  + automatic reconnecting
  + handling of multiline messages from DC++

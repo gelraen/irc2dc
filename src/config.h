@@ -31,6 +31,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <map>
+
+
 #include <ircconfig.h>
 #include <dcconfig.h>
 
@@ -44,10 +47,13 @@ public:
 	Config(const IRCConfig& c1,const DCConfig& c2);
 	bool ReadFromFile(const string& sConfFile);
 	const string& getLogFile();
-
     ~Config();
-protected:
 	string m_sLogFile;
+protected:
+	string get_string(string name);
+	int get_int(string name);
+	char get_char(string name);
+	map<string,string> vars;
 };
 
 #endif

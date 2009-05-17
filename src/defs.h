@@ -61,6 +61,6 @@ inline string int2str(int n)
 	return string(buf);
 }
 
-string trim(const string& inStr);
+string trim(string str, const char ch = ' ');
 
 #endif // __DEFS_H__

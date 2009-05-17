@@ -102,7 +102,7 @@ bool IRCClient::Connect()
 		case AF_INET:
 			addr.sin_len=sizeof(addr);
 			addr.sin_family=AF_INET;
-			addr.sin_port=htons(m_config.m_irc_port);
+			addr.sin_port=htons((unsigned short)m_config.m_irc_port);
 			addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));
 			if (m_connection.Connect((sockaddr*)&addr,sizeof(addr)))
 			{
@@ -115,7 +115,7 @@ bool IRCClient::Connect()
 		case AF_INET6:
 			addr6.sin_len=sizeof(addr6);
 			addr6.sin_family=AF_INET6;
-			addr6.sin_port=htons(m_config.m_irc_port);
+			addr6.sin_port=htons((unsigned short)m_config.m_irc_port);
 			addr6.sin_addr= *((in6_addr*)(p->h_addr_list[0]));
 			if (m_connection.Connect((sockaddr*)&addr6,sizeof(addr6)))
 			{

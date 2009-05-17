@@ -36,15 +36,9 @@ using namespace std;
 
 unsigned long LogLevel=0;
 
-string trim(const string& inStr)
+string trim(string str, const char ch)
 {
-	string::size_type pos=0;
-	string str=inStr;
-	while(isspace(str[pos])) pos++;
-	str.erase(0,pos);
-	pos=str.length()-1;
-	while(isspace(str[pos])) pos--;
-	str.erase(pos+1);
+	str.erase(0, str.find_first_not_of(ch));
+	str.erase(str.find_last_not_of(ch)+1);
 	return str;
 }
-
