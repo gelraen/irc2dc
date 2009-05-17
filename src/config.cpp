@@ -104,10 +104,8 @@ bool Config::ReadFromFile(const string& sConfFile)
 		if (str == ""||(pos=str.find("="))==string::npos)
 			continue;
 		vars[trim(str.substr(0, pos))] =
-			       		 trim(str.substr(pos + 1));
+				trim(trim(trim(str.substr(pos + 1)), '\''), '\"');
 	};
-	for (map<string,string>::iterator i = vars.begin(); i != vars.end(); i++)
-		i->second = trim(trim(i->second, '\''), '\"');
 	
 	int i;
 	istringstream s;
