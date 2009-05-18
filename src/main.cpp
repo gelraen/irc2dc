@@ -49,7 +49,9 @@ int main()
 	LogLevel=0xffffffff; // log all
 	LogLevel&=(~LOG_RAWDATA); // except raw data
 	
-	conf.ReadFromFile("irc2dc.conf");
+	string conffile=CONFFILE;
+	
+	conf.ReadFromFile(conffile);
 
 	if (!irc.setConfig(conf))
 	{

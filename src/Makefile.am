@@ -12,3 +12,4 @@ dctest_SOURCES = connection.cpp dcclient.cpp dcconfig.cpp dcconnection.cpp \
 irctest_SOURCES = connection.cpp defs.cpp ircclient.cpp ircconfig.cpp \
 	ircconnection.cpp irctest.cpp
 sysconf_DATA = irc2dc.conf.dist
+DEFS+= -DCONFFILE="\"$(sysconfdir)/irc2dc.conf\""
