@@ -49,6 +49,7 @@ public:
 	const string& getLogFile();
     ~Config();
 	string m_sLogFile;
+	string m_pidfile;
 protected:
 	string get_string(string name);
 	int get_int(string name);

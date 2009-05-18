@@ -78,6 +78,7 @@ const confvar varlist[]={
  {"dc_email",		's',	NULL,	&Config::m_dc_email},
  {"dc_share_size",	's',	NULL,	&Config::m_dc_share_size},
  {"logfile",		's',	NULL,	&Config::m_sLogFile},
+ {"pidfile",		's',	NULL,	&Config::m_pidfile},
  {"",				'\0',	NULL,	NULL} // terminator
 };
 

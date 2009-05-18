@@ -41,11 +41,13 @@
 #include "../config.h"
 #include <cstdlib>
 #include <cstdio>
+#include <fstream>
 
 using namespace std;
 
 void usage();
 void version();
+bool writepid(const string& pidfile);
 
 int main(int argc,char *argv[])
 {
@@ -57,6 +59,7 @@ int main(int argc,char *argv[])
 	LogLevel&=(~LOG_RAWDATA); // except raw data
 	
 	string conffile=CONFFILE;
+	string pidfile;
 	bool daemonize=true;
 	string logfile;
 	
@@ -67,7 +70,7 @@ int main(int argc,char *argv[])
 	}
 	
 	char ch;
-	while((ch = getopt(argc, argv, "dc:l:h")) != -1) {
+	while((ch = getopt(argc, argv, "dc:l:p:h")) != -1) {
 		switch (ch) {
 			case 'd':
 				daemonize=false;
@@ -77,6 +80,9 @@ int main(int argc,char *argv[])
 				break;
 			case 'l':
 				logfile=optarg;
+				break;
+			case 'p':
+				pidfile=optarg;
 				break;
 			case 'h':
 			case '?':
@@ -97,6 +103,11 @@ int main(int argc,char *argv[])
 		conf.m_sLogFile=logfile;
 	}
 	
+	if (!pidfile.empty())
+	{
+		conf.m_pidfile=pidfile;
+	}
+
 	if (daemonize)
 	{
 		if (daemon(0,0)==-1) // chdir to '/' and close fd's 0-2
@@ -107,7 +118,12 @@ int main(int argc,char *argv[])
 
 		// init logging here (maybe just open file at fd 2)
 	}
-	
+
+	if (!conf.m_pidfile.empty()&&!writepid(conf.m_pidfile))
+	{
+		LOG(LOG_ERROR,"Unable to write pidfile");
+	}
+
 	if (!irc.setConfig(conf))
 	{
 		LOG(LOG_ERROR,"Incorrect config for IRC");
@@ -198,6 +214,7 @@ void usage()
 	cout << "   -h      - show this help message" << endl;
 	cout << "   -c file - specify path to config file" << endl;
 	cout << "   -l file - override path to logfile specified in config" << endl;
+	cout << "   -p file - override path to pidfile specified in config" << endl;
 	cout << "   -d      - do not go in background, all logging goes to stderr" << endl;
 	cout << endl;
 }
@@ -205,4 +222,12 @@ void usage()
 void version()
 {
 	cout << PACKAGE << " " << VERSION << endl;
+}
+
+bool writepid(const string& pidfile)
+{
+	ofstream pid(pidfile.c_str());
+	if (pid.bad()) return false;
+	pid << getpid() << endl;
+	return true;
 }
