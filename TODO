@@ -1,7 +1,7 @@
 This release:
  +- normal logging
  + config file
- - forking into background
+ + daemon mode
  + automatic reconnecting
  + handling of multiline messages from DC++
 

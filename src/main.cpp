@@ -37,10 +37,17 @@
 #include <dcclient.h>
 #include <ircclient.h>
 #include <sys/select.h>
+#include <unistd.h>
+#include "../config.h"
+#include <cstdlib>
+#include <cstdio>
 
 using namespace std;
 
-int main()
+void usage();
+void version();
+
+int main(int argc,char *argv[])
 {
 	Config conf;
 	Translator trans;
@@ -50,9 +57,57 @@ int main()
 	LogLevel&=(~LOG_RAWDATA); // except raw data
 	
 	string conffile=CONFFILE;
+	bool daemonize=true;
+	string logfile;
 	
-	conf.ReadFromFile(conffile);
+	if (argc==1)
+	{
+		usage();
+		return 0;
+	}
+	
+	char ch;
+	while((ch = getopt(argc, argv, "dc:l:h")) != -1) {
+		switch (ch) {
+			case 'd':
+				daemonize=false;
+				break;
+			case 'c':
+				conffile=optarg;
+				break;
+			case 'l':
+				logfile=optarg;
+				break;
+			case 'h':
+			case '?':
+			default:
+				usage();
+				return(0);
+		}
+	}
 
+	if (!conf.ReadFromFile(conffile))
+	{
+		cerr << "Failed to load config. Exiting." << endl;
+		return 1;
+	}
+	
+	if (!logfile.empty())
+	{
+		conf.m_sLogFile=logfile;
+	}
+	
+	if (daemonize)
+	{
+		if (daemon(0,0)==-1) // chdir to '/' and close fd's 0-2
+		{
+			perror("daemon");
+			return 1;
+		}
+
+		// init logging here (maybe just open file at fd 2)
+	}
+	
 	if (!irc.setConfig(conf))
 	{
 		LOG(LOG_ERROR,"Incorrect config for IRC");
@@ -64,7 +119,6 @@ int main()
 		return 1;
 	}
 
-	
 	string str;
 	
 	LOG(LOG_NOTICE,"Connecting to IRC... ");
@@ -73,14 +127,14 @@ int main()
 		LOG(LOG_ERROR,"ERROR");
 		return 2;
 	} else LOG(LOG_NOTICE,"OK");
-	
+
 	LOG(LOG_NOTICE,"Connecting to DC++... ");
 	if (!dc.Connect())
 	{
 		LOG(LOG_ERROR,"ERROR");
 		return 2;
 	} else LOG(LOG_NOTICE,"OK");
-	
+
 	// now recreate config, cause DC hub may change our nickname
 	conf=Config(irc.getConfig(),dc.getConfig());
 	
@@ -89,10 +143,10 @@ int main()
 		LOG(LOG_ERROR,"Incorrect config for Translator");
 		return 1;
 	}
-	
+
 	fd_set rset;
 	int max=0,t;
-	
+
 	for(;;)
 	{
 		// recreate rset
@@ -132,6 +186,23 @@ int main()
 			irc.Connect();
 		}
 	}
-	
+
 	return 0;
+}
+
+void usage()
+{
+	version();
+	cout << endl;
+	cout << "Options:" << endl;
+	cout << "   -h      - show this help message" << endl;
+	cout << "   -c file - specify path to config file" << endl;
+	cout << "   -l file - override path to logfile specified in config" << endl;
+	cout << "   -d      - do not go in background, all logging goes to stderr" << endl;
+	cout << endl;
+}
+
+void version()
+{
+	cout << PACKAGE << " " << VERSION << endl;
 }
