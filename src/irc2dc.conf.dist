@@ -19,6 +19,7 @@
 ;dc_server="127.0.0.1"
 ;dc_port=411
 ;dc_nick="irc2dc"
+;dc_pass=""
 ;dc_description="IRC-to-DC++ gate bot"
 ;dc_speed="100"
 ;dc_speed_val=1
