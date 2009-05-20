@@ -136,76 +136,57 @@ bool DCClient::Connect()
 	for(;;)
 	{
 		m_connection.ReadCmdSync(cmd);
-		if (cmd.length()>=string("$Lock ").length()
-				  &&
-				  cmd.substr(0,string("$Lock ").length())==string("$Lock "))
+		if (!m_connection.isConnected()) return false;
+
+		if (cmd.find("$Lock ")==0)
 		{
-			break;
+			// erase "$Lock "
+			cmd.erase(0,string("$Lock ").length());
+			
+			// erase all after first space
+			string::size_type pos;
+			pos=cmd.find(' ');
+			if (pos!=string::npos)
+			{
+				cmd.erase(pos,string::npos);
+			}
+			m_connection.WriteCmdSync(string("$Key ")+DecodeLock(cmd));
+			if (!m_connection.isConnected()) return false;
+
+			// read all other unneeded commands from server
+			while(m_connection.ReadCmdAsync(cmd));
+			if (!m_connection.isConnected()) return false;
+
+			//starting nick validation
+			m_connection.WriteCmdSync(string("$ValidateNick ")+m_config.m_dc_nick);
+			if (!m_connection.isConnected()) return false;
 		}
-		if (!m_connection.isConnected()) return false;
-	}
-	
-	// erase "$Lock "
-	cmd.erase(0,string("$Lock ").length());
-	
-	// erase all after first space
-	string::size_type pos;
-	pos=cmd.find(' ');
-	if (pos!=string::npos)
-	{
-		cmd.erase(pos,string::npos);
-	}
-	
-	m_connection.WriteCmdSync(string("$Key ")+DecodeLock(cmd));
-	if (!m_connection.isConnected()) return false;
-	
-	// read all other unneeded commands from server
-	while(m_connection.ReadCmdAsync(cmd));
-	if (!m_connection.isConnected()) return false;
-	
-	//starting nick validation
-	for(;;)
-	{
-		m_connection.WriteCmdSync(string("$ValidateNick ")+m_config.m_dc_nick);
-		if (!m_connection.isConnected()) return false;
-		m_connection.ReadCmdSync(cmd);
-		if (!m_connection.isConnected()) return false;
-		if (cmd==string("$ValidateDenide"))
+		else if (cmd==string("$ValidateDenide"))
 		{
 			cerr << "Nickname \"" << m_config.m_dc_nick << "\" already taken. ";
 			m_config.m_dc_nick+="_";
 			cerr << "Trying \"" << m_config.m_dc_nick << "\"..." << endl;
+			m_connection.WriteCmdSync(string("$ValidateNick ")+m_config.m_dc_nick);
+			if (!m_connection.isConnected()) return false;
 		}
-		else
+		else if (cmd==string("$GetPass"))
 		{
-			break;
+			m_connection.WriteCmdSync(string("$MyPass ")+m_config.m_dc_pass);
 		}
-	}
-	
-	// Nick valid, so next command may be "$GetPass" or "$Hello"
-	if (cmd==string("$GetPass"))
-	{
-		m_connection.WriteCmdSync(string("$MyPass ")+m_config.m_dc_pass);
-		m_connection.ReadCmdSync(cmd);
-		if (cmd==string("$BadPass"))
+		else if (cmd==string("$BadPass"))
 		{
 			cerr << "Hub said that our password is incorrect..." << endl;
 			m_connection.Close();
 			return false;
 		}
+		else if (cmd.find("$Hello ")==0)
+		{
+			cmd.erase(0,string("$Hello ").length());
+			m_config.m_dc_nick=cmd; // new nickname sent in "$Hello" command
+			break;
+		}
 	}
 
-	while (!(cmd.length()>=string("$Hello ").length()
-		   &&
-		   cmd.substr(0,string("$Hello ").length())==string("$Hello ")))
-	{
-		m_connection.ReadCmdSync(cmd);
-	}
-	if (!m_connection.isConnected()) return false;
-	
-	cmd.erase(0,string("$Hello ").length());
-	m_config.m_dc_nick=cmd; // new nickname sent in "$Hello" command
-	
 	m_connection.WriteCmdAsync("$Version 1,0096");
 	if (!m_connection.isConnected()) return false;
 	m_connection.WriteCmdSync(string("$MyINFO $ALL ")+
