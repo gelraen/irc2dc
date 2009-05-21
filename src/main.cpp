@@ -43,6 +43,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <fstream>
+#include <sys/stat.h>
 
 using namespace std;
 

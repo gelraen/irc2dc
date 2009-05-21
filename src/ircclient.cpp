@@ -32,13 +32,12 @@
 #include "defs.h"
 #include <netdb.h>
 #include <netinet/in.h>
-#ifdef WITH_IPv6
-#	include <netinet6/in6.h>
-#endif
 
 #include <iostream>
 #include <vector>
 #include <string.h>
+
+#include "../config.h"
 
 using namespace std;
 
@@ -101,7 +100,9 @@ bool IRCClient::Connect()
 	switch(p->h_addrtype)
 	{
 		case AF_INET:
-			//addr.sin_len=sizeof(addr);
+#ifdef HAVE_SIN_LEN
+			addr.sin_len=sizeof(addr);
+#endif
 			addr.sin_family=AF_INET;
 			addr.sin_port=htons((unsigned short)m_config.m_irc_port);
 			addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));
@@ -114,7 +115,9 @@ bool IRCClient::Connect()
 			break;
 #ifdef WITH_IPv6
 		case AF_INET6:
+#ifdef HAVE_SIN6_LEN
 			addr6.sin_len=sizeof(addr6);
+#endif
 			addr6.sin_family=AF_INET6;
 			addr6.sin_port=htons((unsigned short)m_config.m_irc_port);
 			addr6.sin_addr= *((in6_addr*)(p->h_addr_list[0]));
