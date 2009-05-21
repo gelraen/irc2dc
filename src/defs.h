@@ -35,24 +35,23 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <syslog.h>
+
 using namespace std;
 
 extern unsigned long LogLevel;
 
-const int LOG_ERROR=0x0001;
-const int LOG_WARNING=0x0002;
-const int LOG_RAWDATA=0x0004;
-const int LOG_NOTICE=0x0008;
-const int LOG_STATE=0x0010;
-const int LOG_COMMAND=0x0020;
-
-inline void LOG(int n,const string& str)
-{
-	if ((n)&LogLevel)
-	{
-		cerr << str << endl;
-	}
+namespace log
+{ 
+	const int error=0x0001;
+	const int warning=0x0002;
+	const int rawdata=0x0004;
+	const int notice=0x0008;
+	const int state=0x0010;
+	const int command=0x0020;
 }
+
+void LOG(int n,const string& str, bool explainErrno=false);
 
 inline string int2str(int n)
 {

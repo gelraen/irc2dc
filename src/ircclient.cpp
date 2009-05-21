@@ -29,6 +29,7 @@
  *  $Id$
  */
 #include "ircclient.h"
+#include "defs.h"
 #include <netdb.h>
 #include <netinet/in.h>
 #ifdef WITH_IPv6
@@ -37,6 +38,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string.h>
 
 using namespace std;
 
@@ -82,25 +84,24 @@ bool IRCClient::Connect()
 	 * 3.4) send JOIN
 	 */
 	sockaddr_in addr;
-	bzero(&addr,sizeof(addr));
+	memset(&addr,0,sizeof(addr));
 #ifdef WITH_IPv6
 	sockaddr_in6 addr6;
-	bzero(&addr6,sizeof(addr6));
+	memset(&addr6,0,sizeof(addr6));
 #endif
 	
 	hostent* p;
 	p=gethostbyname(m_config.m_irc_server.c_str());
 	if (p==NULL)
 	{
-		cerr << "Can not resolve name \"" << m_config.m_irc_server  << "\""
-				<< endl;
-		herror("IRCClient::Connect(): gethostbyname(3) failed");
+		LOG(log::error, "Can not resolve name \"" + m_config.m_irc_server + "\"");
+		LOG(log::error, string("IRCClient::Connect(): gethostbyname(3) failed: ")+hstrerror(h_errno));
 		return false;
 	}
 	switch(p->h_addrtype)
 	{
 		case AF_INET:
-			addr.sin_len=sizeof(addr);
+			//addr.sin_len=sizeof(addr);
 			addr.sin_family=AF_INET;
 			addr.sin_port=htons((unsigned short)m_config.m_irc_port);
 			addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));

@@ -32,6 +32,8 @@
 #include "defs.h"
 #include <string>
 #include <cctype>
+#include <errno.h>
+#include <string.h>
 using namespace std;
 
 unsigned long LogLevel=0;
@@ -41,4 +43,21 @@ string trim(string str, const char ch)
 	str.erase(0, str.find_first_not_of(ch));
 	str.erase(str.find_last_not_of(ch)+1);
 	return str;
+}
+
+void LOG(int n,const string& str, bool explainErrno)
+{
+	if ((n)&LogLevel)
+	{
+		string errnoMessage = explainErrno? ": "+string(strerror(errno)) : "";
+		cerr << str << errnoMessage << endl;
+		int sysloglevel =
+			(n==log::error)   ? LOG_ERR :
+			(n==log::warning) ? LOG_WARNING :
+			(n==log::notice)  ? LOG_NOTICE :
+			(n==log::rawdata) ? LOG_DEBUG :
+			(n==log::state || n==log::command) ? LOG_INFO :
+				LOG_ERR;
+		syslog(LOG_DAEMON | sysloglevel, (str+errnoMessage).c_str());
+	}
 }

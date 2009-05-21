@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string.h>
 using namespace std;
 
 DCClient::DCClient()
@@ -81,10 +82,10 @@ bool DCClient::Connect()
 	* 3.4) send Password, if requested
 	*/
 	sockaddr_in addr;
-	bzero(&addr,sizeof(addr));
+	memset(&addr, 0, sizeof(addr));
 #ifdef WITH_IPv6
 	sockaddr_in6 addr6;
-	bzero(&addr6,sizeof(addr6));
+	memset(&addr6, 0, sizeof(addr6));
 #endif
 	
 	hostent* p;
@@ -99,7 +100,7 @@ bool DCClient::Connect()
 	switch(p->h_addrtype)
 	{
 	case AF_INET:
-		addr.sin_len=sizeof(addr);
+		//addr.sin_len=sizeof(addr);
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons((unsigned short)m_config.m_dc_port);
 		addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));

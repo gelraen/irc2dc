@@ -88,12 +88,12 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 	m_socket=socket(name->sa_family,SOCK_STREAM,0);
 	if (m_socket==-1)
 	{
-		perror("Connection::Connect(): socket(2) failed");
+		LOG(log::error, "Connection::Connect(): socket(2) failed", true);
 		exit(1);
 	}
 	if ((r=connect(m_socket,name,namelen))==-1)
 	{
-		perror("Connection::Connect(): connect(2) failed");
+		LOG(log::error, "Connection::Connect(): connect(2) failed", true);
 		close(m_socket);
 	}
 	else
@@ -102,12 +102,12 @@ int Connection::Connect(const struct sockaddr *name, socklen_t namelen)
 		int fl;
 		if ((fl=fcntl(m_socket,F_GETFL))==-1)
 		{
-			perror("Connection::Connect(): fcntl(2)(socket,F_GETFL) failed");
+			LOG(log::error, "Connection::Connect(): fcntl(2)(socket,F_GETFL) failed", true);
 			exit(1);
 		}
 		if (fcntl(m_socket,F_SETFL,fl|O_NONBLOCK)==-1)
 		{
-			perror("Connection::Connect(): fcntl(2)(socket,F_SETFL) failed");
+			LOG(log::error, "Connection::Connect(): fcntl(2)(socket,F_SETFL) failed", true);
 			exit(1);
 		}
 	}
@@ -144,7 +144,7 @@ void Connection::_write()
 	{
 		n=write(m_socket,m_sendbuf.c_str(),m_sendbuf.length());
 		if (n==-1&&errno!=EINTR) break;
-		LOG(LOG_RAWDATA,(string("to ")+int2str(m_socket)+string(" > ")+
+		LOG(log::rawdata,(string("to ")+int2str(m_socket)+string(" > ")+
 				m_sendbuf.substr(0,n)).c_str());
 		m_sendbuf.erase(0,n);
 	}
@@ -158,10 +158,10 @@ void Connection::_write()
 			case ECONNRESET:
 				close(m_socket);
 				m_bConnected=false;
-				perror("Connection::_write()");
+				LOG(log::notice, "Connection::_write()", true);
 				break;
 			default:
-				perror("Connection::_write(): write(2) failed");
+				LOG(log::notice, "Connection::_write(): write(2) failed", true);
 				break;
 		};
 	}}
@@ -180,7 +180,7 @@ void Connection::_read()
 		while((n=read(m_socket,(void*)buf,4096))>0)
 		{
 			m_recvbuf+=string(buf,n);
-			LOG(LOG_RAWDATA,(string("from ")+int2str(m_socket)+string(" > ")+
+			LOG(log::rawdata,(string("from ")+int2str(m_socket)+string(" > ")+
 					m_sendbuf.substr(0,n)).c_str());
 		}
 		if (n==0||(n==-1&&errno!=EINTR)) break;
@@ -202,10 +202,10 @@ void Connection::_read()
 			case ECONNRESET:
 				close(m_socket);
 				m_bConnected=false;
-				perror("Connection::_read():");
+				LOG(log::notice, "Connection::_read():", true);
 				break;
 			default:
-				perror("Connection::_read(): read(2) failed:");
+				LOG(log::notice, "Connection::_read(): read(2) failed:", true);
 				break;
 		};
 	}

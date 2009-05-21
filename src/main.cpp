@@ -38,6 +38,7 @@
 #include <ircclient.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "../config.h"
 #include <cstdlib>
 #include <cstdio>
@@ -56,12 +57,13 @@ int main(int argc,char *argv[])
 	IRCClient irc;
 	DCClient dc;
 	LogLevel=0xffffffff; // log all
-	LogLevel&=(~LOG_RAWDATA); // except raw data
+	LogLevel&=(~log::rawdata); // except raw data
 	
 	string conffile=CONFFILE;
 	string pidfile;
 	bool daemonize=true;
 	string logfile;
+
 	
 	if (argc==1)
 	{
@@ -90,13 +92,17 @@ int main(int argc,char *argv[])
 				usage();
 				return(0);
 		}
-	}
+	}	
 
 	if (!conf.ReadFromFile(conffile))
 	{
-		cerr << "Failed to load config. Exiting." << endl;
+		LOG(log::error, "Failed to load config. Exiting", true);
 		return 1;
 	}
+	
+	if(!logfile.empty())
+	if(dup2(open(logfile.c_str(), O_APPEND | O_CREAT, S_IRWXU | S_IRWXG),2)==-1)
+		LOG(log::warning, "Failed to open log file. Continue logging to old stderr", true);
 	
 	if (!logfile.empty())
 	{
@@ -112,51 +118,49 @@ int main(int argc,char *argv[])
 	{
 		if (daemon(0,0)==-1) // chdir to '/' and close fd's 0-2
 		{
-			perror("daemon");
+			LOG(log::error, "daemon() failed, exiting", true);
 			return 1;
 		}
-
-		// init logging here (maybe just open file at fd 2)
 	}
 
 	if (!conf.m_pidfile.empty()&&!writepid(conf.m_pidfile))
 	{
-		LOG(LOG_ERROR,"Unable to write pidfile");
+		LOG(log::error,"Unable to write pidfile", true);
 	}
 
 	if (!irc.setConfig(conf))
 	{
-		LOG(LOG_ERROR,"Incorrect config for IRC");
+		LOG(log::error,"Incorrect config for IRC", true);
 		return 1;
 	}
 	if (!dc.setConfig(conf))
 	{
-		LOG(LOG_ERROR,"Incorrect config for DC++");
+		LOG(log::error,"Incorrect config for DC++", true);
 		return 1;
 	}
 
 	string str;
 	
-	LOG(LOG_NOTICE,"Connecting to IRC... ");
+	LOG(log::notice,"Connecting to IRC... ");
 	if (!irc.Connect())
 	{
-		LOG(LOG_ERROR,"ERROR");
+		LOG(log::error,"ERROR");
 		return 2;
-	} else LOG(LOG_NOTICE,"OK");
+	} else LOG(log::notice,"OK");
 
-	LOG(LOG_NOTICE,"Connecting to DC++... ");
+	LOG(log::notice,"Connecting to DC++... ");
 	if (!dc.Connect())
 	{
-		LOG(LOG_ERROR,"ERROR");
+		LOG(log::error,"ERROR");
 		return 2;
-	} else LOG(LOG_NOTICE,"OK");
+	} else LOG(log::notice,"OK");
 
 	// now recreate config, cause DC hub may change our nickname
 	conf=Config(irc.getConfig(),dc.getConfig());
 	
 	if (!trans.setConfig(conf))
 	{
-		LOG(LOG_ERROR,"Incorrect config for Translator");
+		LOG(log::error,"Incorrect config for Translator");
 		return 1;
 	}
 
@@ -185,7 +189,7 @@ int main(int argc,char *argv[])
 		}
 		if (!dc.isLoggedIn())
 		{
-			LOG(LOG_WARNING,"DC++ connection closed. Trying to reconnect...");
+			LOG(log::warning, "DC++ connection closed. Trying to reconnect...");
 			dc.Connect();
 		}
 		
@@ -198,7 +202,7 @@ int main(int argc,char *argv[])
 		}
 		if (!irc.isLoggedIn())
 		{
-			LOG(LOG_WARNING,"IRC connection closed. Trying to reconnect...");
+			LOG(log::warning,"IRC connection closed. Trying to reconnect...");
 			irc.Connect();
 		}
 	}

@@ -60,7 +60,7 @@ bool DCConnection::WriteCmdAsync(const string& s)
 	{
 		str.replace(pos,1,"&#124;");
 	}
-	LOG(LOG_COMMAND,string("to ")+int2str(m_socket)+string(" > ")+str);
+	LOG(log::command,string("to ")+int2str(m_socket)+string(" > ")+str);
 	m_sendbuf+=str;
 	m_sendbuf+=string("|");
 	
@@ -85,7 +85,7 @@ bool DCConnection::ReadCmdAsync(string& str)
 	pos=m_recvbuf.find("|",0);
 	if (pos==string::npos) return false; // still no full command
 	str=m_recvbuf.substr(0,pos);
-	LOG(LOG_COMMAND,string("from ")+int2str(m_socket)+string(" > ")+str);
+	LOG(log::command,string("from ")+int2str(m_socket)+string(" > ")+str);
 	m_recvbuf.erase(0,pos+1);
 	
 	// now replace encoded | and & with normal representation

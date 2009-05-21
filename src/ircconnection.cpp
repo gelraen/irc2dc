@@ -64,7 +64,7 @@ bool IRCConnection::WriteCmdAsync(const string& s)
 	}
 	
 	m_sendbuf+=str;
-	LOG(LOG_COMMAND,string("to ")+int2str(m_socket)+string(" > ")+str);
+	LOG(log::command,string("to ")+int2str(m_socket)+string(" > ")+str);
 	m_sendbuf+="\r\n";
 	
 	_write();
@@ -88,7 +88,7 @@ bool IRCConnection::ReadCmdAsync(string& str)
 	pos=m_recvbuf.find("\r\n");
 	if (pos==string::npos) return false;
 	str=m_recvbuf.substr(0,pos);
-	LOG(LOG_COMMAND,string("from ")+int2str(m_socket)+string(" > ")+str);
+	LOG(log::command,string("from ")+int2str(m_socket)+string(" > ")+str);
 	m_recvbuf.erase(0,pos+2);
 	return true;
 }
