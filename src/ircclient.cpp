@@ -72,7 +72,6 @@ bool IRCClient::writeCommand(const string& str)
  */
 bool IRCClient::Connect()
 {
-    /// @todo implement me
 	/**
 	 * 1) resolve hostname into IPv4/IPv6 address (gethostbyname(3))
 	 * 2) call m_connection.Connect()
