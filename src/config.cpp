@@ -33,6 +33,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -117,7 +118,6 @@ bool Config::ReadFromFile(const string& sConfFile)
 	};
 	
 	int i;
-	istringstream s;
 	for(i=0;varlist[i].type!='\0';i++)
 	{
 		if (vars.find(varlist[i].name)==vars.end()) continue;
@@ -127,8 +127,8 @@ bool Config::ReadFromFile(const string& sConfFile)
 				(this->*(varlist[i].sp))=vars[varlist[i].name];
 				break;
 			case 'i':
-				s.str(vars[varlist[i].name]);
-				s >> (this->*(varlist[i].np));
+				this->*(varlist[i].np)=(int)strtol(vars[varlist[i].name].c_str(),
+													(char **)NULL, 10);
 				break;
 		}
 	}
