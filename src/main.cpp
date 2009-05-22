@@ -57,13 +57,13 @@ int main(int argc,char *argv[])
 	Translator trans;
 	IRCClient irc;
 	DCClient dc;
-	LogLevel=0xffffffff; // log all
-	LogLevel&=(~log::rawdata); // except raw data
 	
 	string conffile=CONFFILE;
 	string pidfile;
 	bool daemonize=true;
 	string logfile;
+	int loglevel;
+	bool bloglevel=false; // specified in command line?
 
 	
 	if (argc==1)
@@ -73,7 +73,7 @@ int main(int argc,char *argv[])
 	}
 	
 	char ch;
-	while((ch = getopt(argc, argv, "dc:l:p:h")) != -1) {
+	while((ch = getopt(argc, argv, "dc:l:L:p:h")) != -1) {
 		switch (ch) {
 			case 'd':
 				daemonize=false;
@@ -84,6 +84,10 @@ int main(int argc,char *argv[])
 			case 'l':
 				logfile=optarg;
 				break;
+			case 'L':
+				bloglevel=true;
+				loglevel=(int)strtol(optarg, (char **)NULL, 10);
+				break;
 			case 'p':
 				pidfile=optarg;
 				break;
@@ -93,14 +97,16 @@ int main(int argc,char *argv[])
 				usage();
 				return(0);
 		}
-	}	
+	}
 
 	if (!conf.ReadFromFile(conffile))
 	{
 		LOG(log::error, "Failed to load config. Exiting", true);
 		return 1;
 	}
-	
+
+	LogLevel= bloglevel ? loglevel : conf.m_loglevel;
+
 	if(!logfile.empty())
 	if(dup2(open(logfile.c_str(), O_APPEND | O_CREAT, S_IRWXU | S_IRWXG),2)==-1)
 		LOG(log::warning, "Failed to open log file. Continue logging to old stderr", true);
@@ -219,6 +225,7 @@ void usage()
 	cout << "   -h      - show this help message" << endl;
 	cout << "   -c file - specify path to config file" << endl;
 	cout << "   -l file - override path to logfile specified in config" << endl;
+	cout << "   -L num  - override loglevel" << endl;
 	cout << "   -p file - override path to pidfile specified in config" << endl;
 	cout << "   -d      - do not go in background, all logging goes to stderr" << endl;
 	cout << endl;

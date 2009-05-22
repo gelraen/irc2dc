@@ -50,6 +50,7 @@ public:
     ~Config();
 	string m_sLogFile;
 	string m_pidfile;
+	int m_loglevel;
 protected:
 	string get_string(string name);
 	int get_int(string name);

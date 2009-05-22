@@ -29,3 +29,12 @@
 ; Other:
 ;logfile=
 ;pidfile=
+;loglevel=11 ; errors, warnings and notices
+; internally loglevel is a bitset, so you can specify needed logging levels by
+; adding corresponding values:
+; errors - 1
+; warnings - 2
+; raw data - 4
+; notices - 8
+; state - 16
+; commands - 32;

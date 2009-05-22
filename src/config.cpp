@@ -40,11 +40,13 @@ using namespace std;
 Config::Config()
 	: IRCConfig(), DCConfig()
 {
+	m_loglevel=log::error + log::warning + log::notice;
 }
 
 Config::Config(const IRCConfig& c1,const DCConfig& c2)
 	: IRCConfig(c1), DCConfig(c2)
 {
+	m_loglevel=log::error + log::warning + log::notice;
 }
 
 
@@ -79,6 +81,7 @@ const confvar varlist[]={
  {"dc_share_size",	's',	NULL,	&Config::m_dc_share_size},
  {"logfile",		's',	NULL,	&Config::m_sLogFile},
  {"pidfile",		's',	NULL,	&Config::m_pidfile},
+ {"loglevel",		'i',	&Config::m_loglevel,	NULL},
  {"",				'\0',	NULL,	NULL} // terminator
 };
 

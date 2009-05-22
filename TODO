@@ -1,5 +1,5 @@
 This release:
- +- normal logging
+ + normal logging
  + config file
  + daemon mode
  + automatic reconnecting
