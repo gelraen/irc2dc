@@ -144,29 +144,31 @@ bool IRCClient::Connect()
 		if (!m_connection.isConnected()) return false;
 	}
 
-	int errcode=0;
-try_nickname:
-	m_connection.WriteCmdSync(string("NICK ")+m_config.m_irc_nick);
-	if (!m_connection.isConnected()) return false;
-	if (m_connection.ReadCmdAsync(cmd))
-	{
-		// remove prefix
-		if (cmd[0]==':') cmd.erase(0,cmd.find(' ')+1);
-		errcode=(int)strtol(cmd.c_str(), (char **)NULL, 10);
-		switch(errcode)
+	int errcode;
+	do {
+		errcode = 0;
+		m_connection.WriteCmdSync(string("NICK ")+m_config.m_irc_nick);
+		if (!m_connection.isConnected()) return false;
+		if (m_connection.ReadCmdAsync(cmd))
 		{
-			case 432: // ERR_ERRONEUSNICKNAME
-			case 436: // ERR_NICKCOLLISION
-			case 437: // ERR_UNAVAILRESOURCE
-				LOG(log::error,"IRC server refused our nick with reply: "+cmd);
-				return false;
-			case 433: // ERR_NICKNAMEINUSE
-				LOG(log::warning,"Nickname \""+m_config.m_irc_nick+"\" already in use");
-				m_config.m_irc_nick+='_';
-				LOG(log::warning,"Trying \""+m_config.m_irc_nick+"\"");
-				goto try_nickname;
+			// remove prefix
+			if (cmd[0]==':') cmd.erase(0,cmd.find(' ')+1);
+			
+			errcode=(int)strtol(cmd.c_str(), (char **)NULL, 10);
+			switch(errcode)
+			{
+				case 432: // ERR_ERRONEUSNICKNAME
+				case 436: // ERR_NICKCOLLISION
+				case 437: // ERR_UNAVAILRESOURCE
+					LOG(log::error,"IRC server refused our nick with reply: "+cmd);
+					return false;
+				case 433: // ERR_NICKNAMEINUSE
+					LOG(log::warning,"Nickname \""+m_config.m_irc_nick+"\" already in use");
+					m_config.m_irc_nick+='_';
+					LOG(log::warning,"Trying \""+m_config.m_irc_nick+"\"");
+			}
 		}
-	}
+	} while (errcode==433);
 
 	m_connection.WriteCmdSync(string("USER ")+m_config.m_irc_username+
 							 string(" 0 * :")+m_config.m_irc_realname);
