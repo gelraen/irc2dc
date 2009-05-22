@@ -36,11 +36,21 @@
 #include <string.h>
 #include <time.h>
 #include <fstream>
+#include <signal.h>
 
 using namespace std;
 
 unsigned long LogLevel=0;
 ofstream logfile;
+string logname;
+
+void reopen_log(int)
+{
+	logfile.close();
+	logfile.open(logname.c_str(),ios::app);
+	// what should we do if log not reopened correctly?
+	signal(SIGHUP,reopen_log);
+}
 
 typedef void (*log_f)(int, const string&);
 
@@ -95,7 +105,9 @@ bool initlog(bool usesyslog,const string& filename)
 	{
 		logfile.open(filename.c_str(),ios::app);
 		if (!logfile) return false;
+		logname=filename;
 		logger=log_file;
+		signal(SIGHUP,reopen_log);
 	}
 	return true;
 }
