@@ -107,10 +107,6 @@ int main(int argc,char *argv[])
 
 	LogLevel= bloglevel ? loglevel : conf.m_loglevel;
 
-	if(!logfile.empty())
-	if(dup2(open(logfile.c_str(), O_APPEND | O_CREAT, S_IRWXU | S_IRWXG),2)==-1)
-		LOG(log::warning, "Failed to open log file. Continue logging to old stderr", true);
-	
 	if (!logfile.empty())
 	{
 		conf.m_sLogFile=logfile;
@@ -127,6 +123,13 @@ int main(int argc,char *argv[])
 		{
 			LOG(log::error, "daemon() failed, exiting", true);
 			return 1;
+		}
+		
+		if (dup2(open(conf.m_sLogFile.c_str(),
+					  O_APPEND | O_CREAT,
+	    			  S_IRWXU | S_IRWXG),2)==-1)
+		{
+			LOG(log::warning, "Failed to open log file. Continue logging to stderr", true);
 		}
 	}
 
