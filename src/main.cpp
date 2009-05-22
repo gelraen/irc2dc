@@ -164,7 +164,7 @@ int main(int argc,char *argv[])
 	} else LOG(log::notice,"OK");
 
 	// now recreate config, cause DC hub may change our nickname
-	conf=Config(irc.getConfig(),dc.getConfig());
+	conf=Config(irc.getConfig(),dc.getConfig(),conf);
 	
 	if (!trans.setConfig(conf))
 	{

@@ -44,7 +44,7 @@ class Config : public IRCConfig, public DCConfig
 {
 public:
     Config();
-	Config(const IRCConfig& c1,const DCConfig& c2);
+	Config(const IRCConfig& c1,const DCConfig& c2,const Config& conf);
 	bool ReadFromFile(const string& sConfFile);
 	const string& getLogFile();
     ~Config();

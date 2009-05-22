@@ -44,11 +44,13 @@ Config::Config()
 	m_bSyslog=0;
 }
 
-Config::Config(const IRCConfig& c1,const DCConfig& c2)
+Config::Config(const IRCConfig& c1,const DCConfig& c2, const Config& conf)
 	: IRCConfig(c1), DCConfig(c2)
 {
-	m_loglevel=log::error + log::warning + log::notice;
-	m_bSyslog=0;
+	m_sLogFile=conf.m_sLogFile;
+	m_pidfile=conf.m_pidfile;
+	m_loglevel=conf.m_loglevel;
+	m_bSyslog=m_bSyslog;
 }
 
 
