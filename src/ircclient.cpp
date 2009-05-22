@@ -107,8 +107,7 @@ bool IRCClient::Connect()
 			addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));
 			if (m_connection.Connect((sockaddr*)&addr,sizeof(addr)))
 			{
-				cerr << "IRCClient::Connect(): cann't connect to requested address"
-						<< endl;
+				LOG(log::error,string("IRCClient::Connect(): cann't connect to requested address"));
 				return false;
 			}
 			break;
@@ -122,14 +121,13 @@ bool IRCClient::Connect()
 			addr6.sin_addr= *((in6_addr*)(p->h_addr_list[0]));
 			if (m_connection.Connect((sockaddr*)&addr6,sizeof(addr6)))
 			{
-				cerr << "IRCClient::Connect(): cann't connect to requested address"
-						<< endl;
+				LOG(log::error,string("IRCClient::Connect(): cann't connect to requested address"));
 				return false;
 			}
 			break;
 #endif
 		default:
-			cerr << "IRCClient::Connect(): unknown address family" << endl;
+			LOG(log::error,"IRCClient::Connect(): unknown address family");
 			return false;
 	}
 	

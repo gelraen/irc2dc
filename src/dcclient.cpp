@@ -35,6 +35,7 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
+#include "defs.h"
 
 #include "../config.h"
 
@@ -91,10 +92,9 @@ bool DCClient::Connect()
 	p=gethostbyname(m_config.m_dc_server.c_str());
 	if (p==NULL)
 	{
-		cerr << "Can not resolve name \"" << m_config.m_dc_server  << "\""
-				<< endl;
-		herror("DCClient::Connect(): gethostbyname(3) failed");
-		return false;
+		LOG(log::error,string("Can not resolve name \"")+
+						m_config.m_dc_server+string("\""));
+		LOG(log::error,string("DClient::Connect(): gethostbyname(3) failed: ")+hstrerror(h_errno));		return false;
 	}
 	switch(p->h_addrtype)
 	{
@@ -107,8 +107,7 @@ bool DCClient::Connect()
 		addr.sin_addr= *((in_addr*)(p->h_addr_list[0]));
 		if (m_connection.Connect((sockaddr*)&addr,sizeof(addr)))
 		{
-			cerr << "DCClient::Connect(): cann't connect to requested address"
-					<< endl;
+			LOG(log::error,string("DCClient::Connect(): cann't connect to requested address"));
 			return false;
 		}
 		break;
@@ -122,14 +121,13 @@ bool DCClient::Connect()
 		addr6.sin_addr= *((in6_addr*)(p->h_addr_list[0]));
 		if (m_connection.Connect((sockaddr*)&addr6,sizeof(addr6)))
 		{
-			cerr << "DCClient::Connect(): cann't connect to requested address"
-					<< endl;
+			LOG(log::error,string("DCClient::Connect(): cann't connect to requested address");
 			return false;
 		}
 		break;
 #endif
 	default:
-		cerr << "DCClient::Connect(): unknown address family" << endl;
+		LOG(log::error,"DCClient::Connect(): unknown address family");
 		return false;
 	}
 	
@@ -167,9 +165,10 @@ bool DCClient::Connect()
 		}
 		else if (cmd==string("$ValidateDenide"))
 		{
-			cerr << "Nickname \"" << m_config.m_dc_nick << "\" already taken. ";
+			LOG(log::warning,string("Nickname \"")+
+						m_config.m_dc_nick+string("\" already taken"));
 			m_config.m_dc_nick+="_";
-			cerr << "Trying \"" << m_config.m_dc_nick << "\"..." << endl;
+			LOG(log::notice,string("Trying \"")+m_config.m_dc_nick+string("\"..."));
 			m_connection.WriteCmdSync(string("$ValidateNick ")+m_config.m_dc_nick);
 			if (!m_connection.isConnected()) return false;
 		}
@@ -179,7 +178,7 @@ bool DCClient::Connect()
 		}
 		else if (cmd==string("$BadPass"))
 		{
-			cerr << "Hub said that our password is incorrect..." << endl;
+			LOG(log::error,string("Hub said that our password is incorrect..."));
 			m_connection.Close();
 			return false;
 		}

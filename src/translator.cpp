@@ -30,6 +30,7 @@
  */
 #include "translator.h"
 #include <iostream>
+#include "defs.h"
 
 using namespace std;
 
@@ -59,8 +60,12 @@ bool Translator::acceptableIRCMessage(const string& str)
 	if ((t=regexec(&m_IRCRe,str.c_str(),1,&match,0))!=0)
 	{
 		if (t!=REG_NOMATCH)
-			cerr << "Translator::acceptableIRCMessage(): regexec(3) returned "
-					<< t << endl;
+		{
+			char buf[256]={0};
+			sprintf(buf,"%d",t);
+			LOG(log::warning,
+				string("Translator::acceptableIRCMessage(): regexec(3) returned ")+buf);
+		}
 		return false;
 	}
 	// chech that regex matched full string
@@ -81,8 +86,12 @@ bool Translator::acceptableDCMessage(const string& str)
 	if ((t=regexec(&m_DCRe,str.c_str(),1,&match,0))!=0)
 	{
 		if (t!=REG_NOMATCH)
-			cerr << "Translator::acceptableDCMessage(): regexec(3) returned "
-				<< t << endl;
+		{
+			char buf[256]={0};
+			sprintf(buf,"%d",t);
+			LOG(log::warning,
+				string("Translator::acceptableDCMessage(): regexec(3) returned ")+buf);
+		}
 		return false;
 	}
 	// chech that regex matched full string
@@ -136,19 +145,24 @@ bool Translator::setConfig(const Config& conf)
 	}
 	
 	int t;
+	char buf[256]={0};
 	if ((t=regcomp(&m_IRCRe,
 		 (string(":[^:!@ ]+((![^:!@ ]+)?@[^:!@ ]+)? PRIVMSG ")+
 			str + string(" :.*")).c_str(), REG_EXTENDED))!=0)
 	{
-		cerr << "Translator::setConfig(): Can not compile regex for IRC. "
-				<< "regcomp(3) returned " << t << endl;
+		sprintf(buf,"%d",t);
+		LOG(log::warning,
+			string("Translator::setConfig(): Can not compile regex for IRC. ")+
+			string("regcomp(3) returned ")+buf);
 		return false;
 	}
 	// maybe here we should use REG_PEND, cause '\0' can be in DC message
 	if ((t=regcomp(&m_DCRe,"<[^$\\|<> ]+> .*",REG_EXTENDED))!=0)
 	{
-		cerr << "Translator::setConfig(): Can not compile regex for DC. "
-				<< "regcomp(3) returned " << t << endl;
+		sprintf(buf,"%d",t);
+		LOG(log::warning,
+			string("Translator::setConfig(): Can not compile regex for DC. ")+
+			string("regcomp(3) returned ")+buf);
 		regfree(&m_IRCRe);
 		return false;
 	}
@@ -172,8 +186,7 @@ bool Translator::IRCtoDC(const string& src,string& dst)
 	// as src matched by regex, pos never shall be eq to string::npos
 	if (pos==string::npos)
 	{
-		cerr << "Translator::IRCtoDC(): Something strange going on here..." 
-				<< endl;
+		LOG(log::error,"Translator::IRCtoDC(): Something strange going on here...");
 		return false;
 	}
 	nick=src.substr(1,pos-1); // skip leading ":"
@@ -182,8 +195,7 @@ bool Translator::IRCtoDC(const string& src,string& dst)
 	pos=src.find(':',1);
 	if (pos==string::npos)
 	{
-		cerr << "Translator::IRCtoDC(): Something strange going on here... wtf?"
-				<< endl;
+		LOG(log::error,"Translator::IRCtoDC(): Something strange going on here... wtf?");
 		return false;
 	}
 	text=src.substr(pos+1); // rest of the src is a message
