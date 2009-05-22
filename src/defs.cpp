@@ -34,9 +34,49 @@
 #include <cctype>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
+#include <fstream>
+
 using namespace std;
 
 unsigned long LogLevel=0;
+ofstream logfile;
+
+typedef void (*log_f)(int, const string&);
+
+void log_stderr(int n,const string& str)
+{
+	tm t;
+	time_t tt=time(NULL);
+	localtime_r(&tt,&t);
+	char buf[256]={0};
+	strftime(buf,256,"%F %T: ",&t);
+	cerr << buf << str << endl;
+}
+
+void log_file(int n, const string& str)
+{
+	tm t;
+	time_t tt=time(NULL);
+	localtime_r(&tt,&t);
+	char buf[256]={0};
+	strftime(buf,256,"%F %T: ",&t);
+	logfile << buf << str << endl;
+}
+
+void log_syslog(int n, const string& str)
+{
+	int sysloglevel =
+			(n==log::error)   ? LOG_ERR :
+			(n==log::warning) ? LOG_WARNING :
+			(n==log::notice)  ? LOG_NOTICE :
+			(n==log::rawdata) ? LOG_DEBUG :
+			(n==log::state || n==log::command) ? LOG_INFO :
+			LOG_ERR;
+	syslog(LOG_DAEMON | sysloglevel, str.c_str());
+}
+
+log_f logger=log_stderr;
 
 string trim(string str, const char ch)
 {
@@ -45,19 +85,27 @@ string trim(string str, const char ch)
 	return str;
 }
 
+bool initlog(bool usesyslog,const string& filename)
+{
+	if (usesyslog)
+	{
+		logger=log_syslog;
+	}
+	else
+	{
+		logfile.open(filename.c_str(),ios::app);
+		if (!logfile) return false;
+		logger=log_file;
+	}
+	return true;
+}
+
 void LOG(int n,const string& str, bool explainErrno)
 {
 	if ((n)&LogLevel)
 	{
 		string errnoMessage = explainErrno? ": "+string(strerror(errno)) : "";
-		cerr << str << errnoMessage << endl;
-		int sysloglevel =
-			(n==log::error)   ? LOG_ERR :
-			(n==log::warning) ? LOG_WARNING :
-			(n==log::notice)  ? LOG_NOTICE :
-			(n==log::rawdata) ? LOG_DEBUG :
-			(n==log::state || n==log::command) ? LOG_INFO :
-				LOG_ERR;
-		syslog(LOG_DAEMON | sysloglevel, (str+errnoMessage).c_str());
+		logger(n,str+errnoMessage);
 	}
 }
+

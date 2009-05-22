@@ -41,12 +41,14 @@ Config::Config()
 	: IRCConfig(), DCConfig()
 {
 	m_loglevel=log::error + log::warning + log::notice;
+	m_bSyslog=0;
 }
 
 Config::Config(const IRCConfig& c1,const DCConfig& c2)
 	: IRCConfig(c1), DCConfig(c2)
 {
 	m_loglevel=log::error + log::warning + log::notice;
+	m_bSyslog=0;
 }
 
 
@@ -82,6 +84,7 @@ const confvar varlist[]={
  {"logfile",		's',	NULL,	&Config::m_sLogFile},
  {"pidfile",		's',	NULL,	&Config::m_pidfile},
  {"loglevel",		'i',	&Config::m_loglevel,	NULL},
+ {"use_syslog",		'i',	&Config::m_bSyslog,	NULL},
  {"",				'\0',	NULL,	NULL} // terminator
 };
 

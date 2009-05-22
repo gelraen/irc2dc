@@ -51,6 +51,7 @@ namespace log
 	const int command=0x0020;
 }
 
+bool initlog(bool usesyslog,const string& filename);
 void LOG(int n,const string& str, bool explainErrno=false);
 
 inline string int2str(int n)

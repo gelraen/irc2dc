@@ -119,17 +119,15 @@ int main(int argc,char *argv[])
 
 	if (daemonize)
 	{
-		if (daemon(0,0)==-1) // chdir to '/' and close fd's 0-2
+		if (daemon(1,0)==-1) // close fd's 0-2
 		{
 			LOG(log::error, "daemon() failed, exiting", true);
 			return 1;
 		}
 		
-		if (dup2(open(conf.m_sLogFile.c_str(),
-					  O_APPEND | O_CREAT,
-	    			  S_IRWXU | S_IRWXG),2)==-1)
+		if (!initlog(conf.m_bSyslog,conf.m_sLogFile))
 		{
-			LOG(log::warning, "Failed to open log file. Continue logging to stderr", true);
+			LOG(log::error,"Unable to initalize logging");
 		}
 	}
 

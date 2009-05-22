@@ -28,6 +28,7 @@
 ;
 ; Other:
 ;logfile=
+;use_syslog=0
 ;pidfile=
 ;loglevel=11 ; errors, warnings and notices
 ; internally loglevel is a bitset, so you can specify needed logging levels by
