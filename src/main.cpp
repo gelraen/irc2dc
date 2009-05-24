@@ -65,13 +65,6 @@ int main(int argc,char *argv[])
 	int loglevel;
 	bool bloglevel=false; // specified in command line?
 
-	
-	if (argc==1)
-	{
-		usage();
-		return 0;
-	}
-	
 	char ch;
 	while((ch = getopt(argc, argv, "dc:l:L:p:h")) != -1) {
 		switch (ch) {
