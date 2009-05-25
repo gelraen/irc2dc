@@ -6,6 +6,7 @@ This release:
  + handling of multiline messages from DC++
 
 Next releases:
+ - enum loglevel
  - CTCP "ACTION" handling
  - class Poller
  - iconv support
