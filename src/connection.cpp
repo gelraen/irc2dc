@@ -260,7 +260,7 @@ bool Connection::WriteCmdSync(const string& str)
 	// try to write until buffer is empty
 	while(!m_sendbuf.empty())
 	{
-		select(m_socket,NULL,&fdset,NULL,NULL);
+		select(m_socket+1,NULL,&fdset,NULL,NULL);
 		_write();
 	}
 	
