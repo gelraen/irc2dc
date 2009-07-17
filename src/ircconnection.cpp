@@ -51,7 +51,7 @@ bool IRCConnection::WriteCmdAsync(const string& s)
 	
 	// 1) replace all '\r' and '\n' with spaces
 	// 2) cut command to 510 bytes
-	// 3) put it in m_sendbuf follower by "\r\n"
+	// 3) put it in m_sendbuf followed by "\r\n"
 	string str=s;
 	string::size_type pos=0;
 	while((pos=str.find_first_of("\r\n",pos))!=string::npos)
