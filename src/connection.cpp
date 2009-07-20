@@ -124,6 +124,7 @@ int Connection::Close()
 	{
 		m_recvbuf.erase();
 		m_sendbuf.erase();
+		m_bConnected=false;
 		return close(m_socket);
 	}
 	return 0;
