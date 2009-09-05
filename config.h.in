@@ -1,0 +1,2 @@
+#define PACKAGE "irc2dc"
+#define VERSION "0.1"

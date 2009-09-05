@@ -9,6 +9,8 @@ set(CONFFILE irc2dc.conf CACHE STRING "Name of config file")
 
 include_directories(BEFORE ${CMAKE_SOURCE_DIR}/src)
 
+configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h)
+
 add_executable(irc2dc
 		src/config.cpp
 		src/config.h
